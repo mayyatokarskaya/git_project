@@ -6,9 +6,9 @@ def get_mask_card_number(card_number: str) -> str:
     return masked_number
 
 
-input_card_number = input("Введите номер карты \n")
-masked_card_number = get_mask_card_number(input_card_number)
-print(masked_card_number)
+# input_card_number = input("Введите номер карты \n")
+# masked_card_number = get_mask_card_number(input_card_number)
+# print(masked_card_number)
 
 
 def get_mask_account(current_account: str) -> str:
@@ -19,6 +19,6 @@ def get_mask_account(current_account: str) -> str:
     return masked_account
 
 
-current_account = input("Введите номер счета \n")
-masked = get_mask_account(current_account)
-print(masked)
+# current_account = input("Введите номер счета \n")
+# masked = get_mask_account(current_account)
+# print(masked)
