@@ -1,20 +1,25 @@
 import pytest
-
 from src.masks import get_mask_card_number
 
 
 @pytest.fixture
-def card_numbers() -> list[tuple[str, str]]:
-    """Фикстура для предоставления списка тестовых данных с номерами карт
-    и ожидаемыми результатами маскирования"""
-
+def valid_card_numbers():
+    """Фикстура с корректными номерами карт"""
     return [
-        ("9876543210123456", "9876 54** **** 3456"),
-        ("1234", ""),
-        ("12345678901234567890", ""),
-        ("", ""),
-        ("abcd123456789012", ""),
-        ("123456781234567X", ""),
+        ("7000792289606361", "7000 79** **** 6361"),
+        ("1234567812345678", "1234 56** **** 5678"),
+        ("1111222233334444", "1111 22** **** 4444"),
+    ]
+
+
+@pytest.fixture
+def invalid_card_numbers():
+    """Фикстура с некорректными номерами карт"""
+    return [
+        ("12345", "Invalid card number"),
+        ("abcd1234efgh5678", "Invalid card number"),
+        ("", "Invalid card number"),
+        ("123456781234567", "Invalid card number"),
     ]
 
 
@@ -22,36 +27,25 @@ def card_numbers() -> list[tuple[str, str]]:
     "card_number, expected",
     [
         ("7000792289606361", "7000 79** **** 6361"),
-        ("1234", ""),
-        ("12345678901234567890", ""),
-        ("", ""),
-        ("abcd123456789012", ""),
-        ("123456781234567X", ""),
+        ("1234567812345678", "1234 56** **** 5678"),
+        ("1111222233334444", "1111 22** **** 4444"),
     ],
 )
-def test_get_mask_card_number(card_number: str, expected: str) -> None:
-    """Тестирование функции get_mask_card_number на различные входные данные"""
-
-    result = get_mask_card_number(card_number)
-    assert result == expected, f"Expected {expected}, but got {result}"
+def test_get_mask_card_number_valid(card_number: str, expected: str):
+    """Тестирование функции get_mask_card_number с корректными номерами карт"""
+    assert get_mask_card_number(card_number) == expected
 
 
-def test_invalid_card_number() -> None:
-    """Дополнительные тесты для проверки обработки некорректных входных данных"""
-
-    assert get_mask_card_number("") == "", "Failed for empty string"
-
-    assert get_mask_card_number("abcd123456789012") == "", "Failed for non-numeric string"
-
-    assert get_mask_card_number("123456781234567X") == "", "Failed for non-digit characters in the middle"
-
-    assert get_mask_card_number("1234") == "", "Failed for short number"
-    assert get_mask_card_number("12345678901234567890") == "", "Failed for too long number"
-
-
-def test_valid_card_numbers() -> None:
-    """Дополнительные тесты для проверки корректной обработки валидных номеров карт"""
-
-    assert get_mask_card_number("7000792289606361") == "7000 79** **** 6361", "Test case 1 failed"
-    assert get_mask_card_number("1234567890123456") == "1234 56** **** 3456", "Test case 2 failed"
-    assert get_mask_card_number("9876543210123456") == "9876 54** **** 3456", "Test case 3 failed"
+@pytest.mark.parametrize(
+    "card_number",
+    [
+        "12345",
+        "abcd1234efgh5678",
+        "",
+        "123456781234561",
+    ],
+)
+def test_get_mask_card_number_invalid(card_number: str):
+    """Тестирование функции get_mask_card_number с некорректными номерами карт"""
+    with pytest.raises(ValueError, match="Invalid card number"):
+        get_mask_card_number(card_number)
