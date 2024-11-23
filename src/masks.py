@@ -8,19 +8,11 @@ def get_mask_card_number(card_number: str) -> str:
     return masked_number
 
 
-# input_card_number = input("Введите номер карты \n")
-# masked_card_number = get_mask_card_number(input_card_number)
-# print(masked_card_number)
-
-
 def get_mask_account(current_account: str) -> str:
     """Маскирует номер счета"""
+    if len(current_account) < 4:
+        return "*" * len(current_account)
     last_four_digits = current_account[-4:]  # последние 4 цифры счета
     masked_account = "**" + last_four_digits  # формируем маску
 
     return masked_account
-
-
-# current_account = input("Введите номер счета \n")
-# masked = get_mask_account(current_account)
-# print(masked)
