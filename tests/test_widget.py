@@ -82,6 +82,7 @@ def test_get_date(data: Dict[str, str]) -> None:
 @pytest.mark.parametrize(
     "input_data", ["InvalidInput", "12-12-2024", "Account"]  # Неверные данные  # Неверный формат даты  # Нет цифр
 )
+
 def test_mask_account_card_invalid(input_data):
     with pytest.raises(ValueError, match="Invalid card number"):
         mask_account_card(input_data)
