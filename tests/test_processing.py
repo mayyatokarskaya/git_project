@@ -1,114 +1,75 @@
 import pytest
-from typing import Dict, List
-from datetime import datetime
+from src.processing import filter_by_state
+from src.processing import sort_by_date
 
 
-def filter_by_state(records: List[Dict[str, str]], state: str = "EXECUTED") -> List[Dict[str, str]]:
-    """Фильтрует список словарей по значению ключа 'state'"""
-    return [record for record in records if record.get("state") == state]
-
-
-def sort_by_date(records: List[Dict[str, str]], reverse: bool = True) -> List[Dict[str, str]]:
-    """Сортирует список словарей по дате (ключ 'date')."""
-    return sorted(records, key=lambda record: record["date"], reverse=reverse)
-
-
+# Фикстура с тестовыми данными
 @pytest.fixture
-def sample_records() -> List[Dict[str, str]]:
-    """Фикстура для создания тестовых данных"""
+def sample_records():
     return [
-        {"id": "1", "state": "EXECUTED", "date": "2023-11-23"},
-        {"id": "2", "state": "CANCELED", "date": "2023-11-22"},
-        {"id": "3", "state": "EXECUTED", "date": "2023-11-24"},
-        {"id": "4", "state": "PENDING", "date": "2023-11-21"},
+        {"state": "EXECUTED", "date": "2024-11-24", "amount": 100},
+        {"state": "PENDING", "date": "2024-11-23", "amount": 50},
+        {"state": "CANCELLED", "date": "2024-11-22", "amount": 200},
+        {"state": "EXECUTED", "date": "2024-11-22", "amount": 200},
     ]
 
+# Параметризация тестов для различных состояний
+@pytest.mark.parametrize("state, expected_count", [
+    ("EXECUTED", 2),
+    ("PENDING", 1),
+    ("CANCELLED", 1),
+    ("FAILED", 0),  # Нет записей с таким состоянием
+    ("", 0),        # Пустое состояние
+])
+def test_filter_by_state(sample_records, state, expected_count):
+    filtered = filter_by_state(sample_records, state)
+    assert len(filtered) == expected_count
+    if expected_count > 0:
+        assert all(record["state"] == state for record in filtered)
 
-@pytest.mark.parametrize(
-    "state, expected_count",
-    [
-        ("EXECUTED", 2),  # Должно быть 2 записи с состоянием EXECUTED
-        ("CANCELED", 1),  # 1 запись с состоянием CANCELED
-        ("PENDING", 1),   # 1 запись с состоянием PENDING
-        ("FAILED", 0),    # Нет записей с состоянием FAILED
+def test_filter_by_state_empty_list():
+    filtered = filter_by_state([], "EXECUTED")
+    assert filtered == []
+
+
+# Фикстура с тестовыми данными
+@pytest.fixture
+def sample_records():
+    return [
+        {"state": "EXECUTED", "date": "2024-11-24", "amount": 100},
+        {"state": "PENDING", "date": "2024-11-23", "amount": 50},
+        {"state": "EXECUTED", "date": "2024-11-23", "amount": 150},
+        {"state": "CANCELLED", "date": "2024-11-22", "amount": 200},
     ]
-)
-def test_filter_by_state(sample_records: List[Dict[str, str]], state: str, expected_count: int):
-    """Тестирование фильтрации по состоянию"""
-    filtered_records = filter_by_state(sample_records, state)
-    assert len(filtered_records) == expected_count, f"Expected {expected_count} records with state {state}, but got {len(filtered_records)}"
 
+# Параметризация тестов для сортировки
+@pytest.mark.parametrize("reverse, expected_dates", [
+    (True, ["2024-11-24", "2024-11-23", "2024-11-23", "2024-11-22"]),  # Убывание
+    (False, ["2024-11-22", "2024-11-23", "2024-11-23", "2024-11-24"]),  # Возрастание
+])
+def test_sort_by_date(sample_records, reverse, expected_dates):
+    sorted_records = sort_by_date(sample_records, reverse)
+    assert [record["date"] for record in sorted_records] == expected_dates
 
-@pytest.mark.parametrize(
-    "records, reverse, expected_order",
-    [
-        (
-            [
-                {"id": "1", "state": "EXECUTED", "date": "2023-11-23"},
-                {"id": "2", "state": "CANCELED", "date": "2023-11-22"},
-                {"id": "3", "state": "EXECUTED", "date": "2023-11-24"},
-            ],
-            True,
-            ["3", "1", "2"],  # Ожидаемый порядок: сначала 2023-11-24, потом 2023-11-23, и наконец 2023-11-22
-        ),
-        (
-            [
-                {"id": "1", "state": "EXECUTED", "date": "2023-11-23"},
-                {"id": "2", "state": "CANCELED", "date": "2023-11-22"},
-                {"id": "3", "state": "EXECUTED", "date": "2023-11-24"},
-            ],
-            False,
-            ["2", "1", "3"],  # Ожидаемый порядок: сначала 2023-11-22, потом 2023-11-23, и наконец 2023-11-24
-        ),
-        (
-            [
-                {"id": "1", "state": "EXECUTED", "date": "2023-11-23"},
-                {"id": "2", "state": "EXECUTED", "date": "2023-11-23"},
-                {"id": "3", "state": "EXECUTED", "date": "2023-11-23"},
-            ],
-            True,
-            ["1", "2", "3"],  # Порядок не меняется, так как все даты одинаковые
-        ),
-        (
-            [
-                {"id": "1", "state": "EXECUTED", "date": "invalid-date"},
-                {"id": "2", "state": "CANCELED", "date": "2023-11-22"},
-                {"id": "3", "state": "EXECUTED", "date": "2023-11-24"},
-            ],
-            True,
-            ["3", "2", "1"],  # Должен быть помещен на последнее место, так как дата некорректна
-        ),
+def test_sort_by_date_with_equal_dates(sample_records):
+    # Записи с одинаковыми датами, но разными состояниями
+    records = [
+        {"state": "EXECUTED", "date": "2024-11-23", "amount": 100},
+        {"state": "PENDING", "date": "2024-11-23", "amount": 50},
     ]
-)
-def test_sort_by_date(records: List[Dict[str, str]], reverse: bool, expected_order: List[str]):
-    """Тестирование сортировки по дате."""
-    sorted_records = sort_by_date(records, reverse)
-    sorted_ids = [record["id"] for record in sorted_records]
-    assert sorted_ids == expected_order, f"Expected order {expected_order}, but got {sorted_ids}"
+    sorted_records = sort_by_date(records)
+    # Должны быть отсортированы по умолчанию по состоянию или по другим признакам
+    assert sorted_records[0]["date"] == sorted_records[1]["date"]
+    assert sorted_records[0]["state"] == "EXECUTED"  # Например, предполагается, что 'EXECUTED' идет первым
 
-
-@pytest.mark.parametrize(
-    "records, expected_exception",
-    [
-        ([
-            {"id": "1", "state": "EXECUTED", "date": "2023-13-01"},  # Некорректный месяц
-            {"id": "2", "state": "CANCELED", "date": "2023-11-22"},
-        ], ValueError),  # Ожидаем ValueError, так как месяц некорректен
-        ([
-            {"id": "1", "state": "EXECUTED", "date": "invalid-date"},  # Некорректный формат даты
-        ], ValueError),  # Ожидаем ValueError, так как дата не может быть распарсена
+def test_sort_by_date_invalid_format():
+    records = [
+        {"state": "EXECUTED", "date": "2024-11-24", "amount": 100},
+        {"state": "EXECUTED", "date": "invalid-date", "amount": 200},
     ]
-)
-def test_sort_by_date_invalid(records: List[Dict[str, str]], expected_exception: type):
-    """Тестирование обработки некорректных дат."""
-    with pytest.raises(expected_exception):
+    with pytest.raises(ValueError):
         sort_by_date(records)
 
-
-# Тестирование фильтрации и сортировки в связке
-def test_filter_and_sort(sample_records: List[Dict[str, str]]):
-    """Тестирование фильтрации и сортировки."""
-    filtered_records = filter_by_state(sample_records, "EXECUTED")
-    sorted_records = sort_by_date(filtered_records, reverse=True)
-    sorted_ids = [record["id"] for record in sorted_records]
-    assert sorted_ids == ["3", "1"], f"Expected sorted order ['3', '1'], but got {sorted_ids}"
+def test_sort_by_date_empty_list():
+    sorted_records = sort_by_date([])
+    assert sorted_records == []

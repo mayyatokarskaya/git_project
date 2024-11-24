@@ -1,3 +1,4 @@
+from datetime import datetime
 from src.masks import get_mask_account, get_mask_card_number
 
 
@@ -24,13 +25,9 @@ def mask_account_card(card_numbers: str) -> str:
         return f"{card_text} {get_mask_card_number(card_number)}"
 
 
-from datetime import datetime
-
-
 def get_date(input_date: str) -> str:
     """Форматирование даты в формат DD.MM.YYYY"""
     try:
-        # Парсим дату, проверяя формат
         date_object = datetime.strptime(input_date, "%Y-%m-%d")
         return date_object.strftime("%d.%m.%Y")
     except ValueError:
