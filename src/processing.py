@@ -7,14 +7,13 @@ def filter_by_state(records: List[Dict[str, str]], state: str = "EXECUTED") -> L
     return [record for record in records if record.get("state") == state]
 
 
-
 def sort_by_date(records: List[Dict[str, str]], reverse: bool = True) -> List[Dict[str, str]]:
     """Сортирует список словарей по дате (ключ 'date') и проверяет формат даты."""
     for record in records:
         try:
-            print(f"Checking date: {record['date']}")  # Отладочный вывод
-            datetime.strptime(record["date"], "%Y-%m-%d")  # Попытка парсинга даты
+            print(f"Checking date: {record['date']}")
+            datetime.strptime(record["date"], "%Y-%m-%d")
         except ValueError:
-            print(f"Invalid date format detected: {record['date']}")  # Отладочный вывод
-            raise ValueError(f"Некорректный формат даты: {record['date']}")  # Бросаем исключение
+            print(f"Invalid date format detected: {record['date']}")
+            raise ValueError(f"Некорректный формат даты: {record['date']}")
     return sorted(records, key=lambda record: record["date"], reverse=reverse)

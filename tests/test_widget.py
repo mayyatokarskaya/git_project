@@ -1,87 +1,102 @@
-from typing import Dict, List
-
 import pytest
 
 from src.widget import get_date, mask_account_card
 
 
+# Фикстуры
 @pytest.fixture
-def account_card_data() -> List[Dict[str, str]]:
-    """Фикстура, возвращающая тестовые данные для номеров карт и счетов."""
+def card_data():
     return [
-        {"input": "Visa Platinum 7000792289606361", "expected": "Visa Platinum **6361"},
-        {"input": "MasterCard 1234567890123456", "expected": "MasterCard **3456"},
-        {"input": "Счет 987654321012345678901234", "expected": "Счет **234"},
-        {"input": "Счет 12", "expected": "Счет **"},
-        {"input": "  1  ", "expected": "  *  "},
-        {"input": "Account 1", "expected": "Account *"},
+        ("Visa Platinum 7000792289606361", "Visa Platinum 7000 79** **** 6361"),
+        ("Maestro 1596837868705199", "Maestro 1596 83** **** 5199"),
+        ("Счет 73654108430135874305", "Счет **4305"),
+        ("MasterCard 7158300734726758", "MasterCard 7158 30** **** 6758"),
     ]
 
 
-@pytest.mark.parametrize(
-    "data",
-    [
-        {"input": "Visa Platinum 7000792289606361", "expected": "Visa Platinum **6361"},
-        {"input": "MasterCard 1234567890123456", "expected": "MasterCard **3456"},
-        {"input": "Счет 987654321012345678901234", "expected": "Счет **234"},
-        {"input": "Счет 12", "expected": "Счет **"},
-        {"input": "  1  ", "expected": "  *  "},
-        {"input": "Account 1", "expected": "Account *"},
-    ],
-)
-def test_mask_account_card(data: Dict[str, str]) -> None:
-    """Тестирование функции mask_account_card с различными картами и счетами."""
-    result = mask_account_card(data["input"])
-    assert result == data["expected"], f"Expected {data['expected']} but got {result}"
-
-
-@pytest.mark.parametrize(
-    "data",
-    [
-        {"input": "123456", "expected": "123456"},
-        {"input": " ", "expected": " "},
-        {"input": "Visa 12345", "expected": "Visa **5"},
-    ],
-)
-def test_mask_account_card_invalid(data: Dict[str, str]) -> None:
-    """Тестирование обработки некорректных данных в mask_account_card."""
-    result = mask_account_card(data["input"])
-    assert result == data["expected"], f"Expected {data['expected']} but got {result}"
-
-
 @pytest.fixture
-def date_data() -> List[Dict[str, str]]:
-    """Фикстура c тестовыми данными для дат"""
+def date_data():
     return [
-        {"input": "2024-03-11T02:26:18.671407", "expected": "11.03.2024"},
-        {"input": "2020-12-31T23:59:59.999999", "expected": "31.12.2020"},
-        {"input": "2024-01-01T00:00:00.000000", "expected": "01.01.2024"},
-        {"input": "2024-03-11", "expected": "11.03.2024"},
-        {"input": "invalid-date", "expected": "Неверный формат даты"},
-        {"input": "", "expected": "Неверный формат даты"},
+        ("2024-03-11T02:26:18.671407", "11.03.2024"),
+        ("2023-12-25T00:00:00.000000", "25.12.2023"),
+        ("2021-01-01T12:00:00.000000", "01.01.2021"),
+        ("invalid_date", None),
+        ("", None),
     ]
 
 
+# Тесты для mask_account_card
 @pytest.mark.parametrize(
-    "data",
+    "account_info, expected_output",
     [
-        {"input": "2024-03-11T02:26:18.671407", "expected": "11.03.2024"},
-        {"input": "2020-12-31T23:59:59.999999", "expected": "31.12.2020"},
-        {"input": "2024-01-01T00:00:00.000000", "expected": "01.01.2024"},
-        {"input": "2024-03-11", "expected": "11.03.2024"},
-        {"input": "invalid-date", "expected": "Неверный формат даты"},
-        {"input": "", "expected": "Неверный формат даты"},
+        ("Visa Platinum 7000792289606361", "Visa Platinum 7000 79** **** 6361"),
+        ("Maestro 1596837868705199", "Maestro 1596 83** **** 5199"),
+        ("Счет 73654108430135874305", "Счет **4305"),
+        ("MasterCard 7158300734726758", "MasterCard 7158 30** **** 6758"),
+        ("Visa 123", "Неизвестный тип карты: Visa"),  # Некорректная карта
+        ("InvalidType 1234567890123456", "Неизвестный тип карты: InvalidType"),  # Неизвестный тип карты
+        ("Счет invalid_account", "Неизвестный тип карты: Счет"),  # Некорректный счет
     ],
 )
-def test_get_date(data: Dict[str, str]) -> None:
-    """Тестирование функции get_date на различных входных данных."""
-    result = get_date(data["input"])
-    assert result == data["expected"], f"Expected {data['expected']} but got {result}"
+def test_mask_account_card(account_info, expected_output):
+    """Проверка маскировки номеров карт и счетов"""
+    assert mask_account_card(account_info) == expected_output
 
 
+# Тестирование get_date
 @pytest.mark.parametrize(
-    "input_data", ["InvalidInput", "12-12-2024", "Account"]  # Неверные данные  # Неверный формат даты  # Нет цифр
+    "date_str, expected_output",
+    [
+        ("2024-03-11T02:26:18.671407", "11.03.2024"),
+        ("2023-12-25T00:00:00.000000", "25.12.2023"),
+        ("2021-01-01T12:00:00.000000", "01.01.2021"),
+        ("invalid_date", None),
+        ("", None),
+    ],
 )
-def test_mask_account_card_invalid_2(input_data):
-    with pytest.raises(ValueError, match="Invalid card number"):
-        mask_account_card(input_data)
+def test_get_date(date_str, expected_output):
+    """Проверка преобразования строки в формат даты"""
+    assert get_date(date_str) == expected_output
+
+
+# Тестирование на фикстурах
+def test_mask_account_card_with_fixture(card_data):
+    """Тестирование функции mask_account_card с использованием фикстуры card_data"""
+    for account_info, expected in card_data:
+        assert mask_account_card(account_info) == expected
+
+
+def test_get_date_with_fixture(date_data):
+    """Тестирование функции get_date с использованием фикстуры date_data"""
+    for date_str, expected in date_data:
+        assert get_date(date_str) == expected
+
+
+# Тестирование обработки некорректных входных данных для mask_account_card
+@pytest.mark.parametrize(
+    "account_info",
+    [
+        "Visa 123",  # слишком короткий номер карты
+        "InvalidType 1234567890123456",  # неизвестный тип карты
+        "Счет invalid_account",  # некорректный номер счета
+        "1234 5678",  # отсутствие типа
+    ],
+)
+def test_invalid_mask_account_card(account_info):
+    """Проверка корректности обработки некорректных входных данных"""
+    assert mask_account_card(account_info) == "Неизвестный тип карты: 1234"
+
+
+# Тестирование обработки некорректных данных в get_date
+@pytest.mark.parametrize(
+    "date_str",
+    [
+        "2024-13-11T02:26:18.671407",  # некорректный месяц
+        "2024-03-32T02:26:18.671407",  # некорректный день
+        "not_a_date",  # строка не является датой
+        "2024-03-11T25:00:00.000000",  # некорректное время
+    ],
+)
+def test_invalid_get_date(date_str):
+    """Проверка обработки некорректных данных даты"""
+    assert get_date(date_str) is None
