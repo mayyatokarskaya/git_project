@@ -1,11 +1,13 @@
+from typing import List, Optional, Tuple
+
 import pytest
 
 from src.widget import get_date, mask_account_card
 
 
-# Фикстуры
 @pytest.fixture
-def card_data():
+def card_data() -> List[Tuple[str, str]]:
+    """Возвращает данные для тестирования маскировки карты"""
     return [
         ("Visa Platinum 7000792289606361", "Visa Platinum 7000 79** **** 6361"),
         ("Maestro 1596837868705199", "Maestro 1596 83** **** 5199"),
@@ -15,7 +17,8 @@ def card_data():
 
 
 @pytest.fixture
-def date_data():
+def date_data() -> List[Tuple[str, Optional[str]]]:
+    """Возвращает данные для тестирования преобразования даты"""
     return [
         ("2024-03-11T02:26:18.671407", "11.03.2024"),
         ("2023-12-25T00:00:00.000000", "25.12.2023"),
@@ -38,7 +41,7 @@ def date_data():
         ("Счет invalid_account", "Неизвестный тип карты: Счет"),  # Некорректный счет
     ],
 )
-def test_mask_account_card(account_info, expected_output):
+def test_mask_account_card(account_info: str, expected_output: str) -> None:
     """Проверка маскировки номеров карт и счетов"""
     assert mask_account_card(account_info) == expected_output
 
@@ -54,19 +57,19 @@ def test_mask_account_card(account_info, expected_output):
         ("", None),
     ],
 )
-def test_get_date(date_str, expected_output):
+def test_get_date(date_str: str, expected_output: Optional[str]) -> None:
     """Проверка преобразования строки в формат даты"""
     assert get_date(date_str) == expected_output
 
 
 # Тестирование на фикстурах
-def test_mask_account_card_with_fixture(card_data):
+def test_mask_account_card_with_fixture(card_data: List[Tuple[str, str]]) -> None:
     """Тестирование функции mask_account_card с использованием фикстуры card_data"""
     for account_info, expected in card_data:
         assert mask_account_card(account_info) == expected
 
 
-def test_get_date_with_fixture(date_data):
+def test_get_date_with_fixture(date_data: List[Tuple[str, Optional[str]]]) -> None:
     """Тестирование функции get_date с использованием фикстуры date_data"""
     for date_str, expected in date_data:
         assert get_date(date_str) == expected
@@ -82,7 +85,7 @@ def test_get_date_with_fixture(date_data):
         "1234 5678",  # отсутствие типа
     ],
 )
-def test_invalid_mask_account_card(account_info):
+def test_invalid_mask_account_card(account_info: str) -> None:
     """Проверка корректности обработки некорректных входных данных"""
     assert mask_account_card(account_info) == "Неизвестный тип карты: 1234"
 
@@ -97,6 +100,6 @@ def test_invalid_mask_account_card(account_info):
         "2024-03-11T25:00:00.000000",  # некорректное время
     ],
 )
-def test_invalid_get_date(date_str):
+def test_invalid_get_date(date_str: str) -> None:
     """Проверка обработки некорректных данных даты"""
     assert get_date(date_str) is None

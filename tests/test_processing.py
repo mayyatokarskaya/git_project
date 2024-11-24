@@ -43,12 +43,18 @@ def test_filter_by_state_empty_list() -> None:
 @pytest.mark.parametrize(
     "reverse, expected_dates",
     [
-        (True, ["2024-11-24", "2024-11-23", "2024-11-23", "2024-11-22"]),
-        (False, ["2024-11-22", "2024-11-23", "2024-11-23", "2024-11-24"]),
+        (True, ["2024-11-24", "2024-11-23", "2024-11-22", "2024-11-22"]),
+        (False, ["2024-11-22", "2024-11-22", "2024-11-23", "2024-11-24"]),
     ],
 )
-def test_sort_by_date(sample_records: List[Dict[str, str]], reverse: bool, expected_dates: List[str]) -> None:
+def test_sort_by_date(reverse: bool, expected_dates: List[str]) -> None:
     """Тестирует функцию sort_by_date на сортировку записей по дате"""
+    sample_records = [
+        {"amount": "100", "date": "2024-11-24", "state": "EXECUTED"},
+        {"amount": "50", "date": "2024-11-23", "state": "PENDING"},
+        {"amount": "200", "date": "2024-11-22", "state": "CANCELLED"},
+        {"amount": "200", "date": "2024-11-22", "state": "EXECUTED"},
+    ]
     sorted_records = sort_by_date(sample_records, reverse)
     assert [record["date"] for record in sorted_records] == expected_dates
 
@@ -70,7 +76,7 @@ def test_sort_by_date_invalid_format() -> None:
         {"state": "EXECUTED", "date": "2024-11-24", "amount": "100"},  # Преобразовано в строку
         {"state": "EXECUTED", "date": "invalid-date", "amount": "200"},  # Преобразовано в строку
     ]
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Invalid date format"):
         sort_by_date(records)
 
 
