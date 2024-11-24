@@ -1,8 +1,8 @@
+from typing import Dict, List
+
 import pytest
 
-
-from src.widget import mask_account_card, get_date
-from typing import List, Dict
+from src.widget import get_date, mask_account_card
 
 
 @pytest.fixture
@@ -82,7 +82,6 @@ def test_get_date(data: Dict[str, str]) -> None:
 @pytest.mark.parametrize(
     "input_data", ["InvalidInput", "12-12-2024", "Account"]  # Неверные данные  # Неверный формат даты  # Нет цифр
 )
-
 def test_mask_account_card_invalid(input_data):
     with pytest.raises(ValueError, match="Invalid card number"):
         mask_account_card(input_data)
