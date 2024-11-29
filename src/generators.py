@@ -12,11 +12,13 @@ def filter_by_currency(transactions: List[Dict[str, Any]], currency: str) -> Ite
 
 def transaction_descriptions(transactions: List[Dict[str, Any]]) -> Iterator[str]:
     """генератор, который возвращает описание каждой операции по очереди"""
+    for transaction in transactions:
+       if "description" in transaction:
+           yield transaction["description"]
 
-    return (transaction["description"] for transaction in transactions if "description" in transaction)
-
-
+#
 # def card_number_generator(card_number: str) -> str:
 #     pass
+
 
 
