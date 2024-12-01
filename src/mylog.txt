@@ -1,2 +1,4 @@
 my_function ok. Result: 2.0
 my_function error: ZeroDivisionError. Inputs: (4, 0), {}
+divide ok. Result: 2.0
+divide error: ZeroDivisionError. Inputs: (4, 0), {}
