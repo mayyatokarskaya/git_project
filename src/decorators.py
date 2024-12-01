@@ -1,6 +1,9 @@
-def log(filename=None):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
+from typing import Callable, Any, Optional
+
+
+def log(filename: Optional[str] = None) -> Callable:
+    def decorator(func: Callable) -> Callable:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 result = func(*args, **kwargs)
                 message = f"{func.__name__} ok. Result: {result}\n"
@@ -18,7 +21,7 @@ def log(filename=None):
 
 # Пример использования
 @log(filename="mylog.txt")
-def divide(x, y):
+def divide(x: float, y: float) -> float:
     return x / y
 
 
