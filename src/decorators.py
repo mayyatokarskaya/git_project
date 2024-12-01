@@ -1,9 +1,14 @@
-from typing import Callable, Any, Optional
+from typing import Any, Callable, Optional
 
 
 def log(filename: Optional[str] = None) -> Callable:
+    """Декоратор для логирования выполнения функции, Callable: Обёртка для декорируемой функции"""
+
     def decorator(func: Callable) -> Callable:
+        """Декоратор для логирования конкретной функции, выполняет вызов функции и логирует её выполнение или ошибки"""
+
         def wrapper(*args: Any, **kwargs: Any) -> Any:
+            """Обёртка для функции, выполняющая логирование и обработку исключений"""
             try:
                 result = func(*args, **kwargs)
                 message = f"{func.__name__} ok. Result: {result}\n"
@@ -19,9 +24,9 @@ def log(filename: Optional[str] = None) -> Callable:
     return decorator
 
 
-# Пример использования
 @log(filename="mylog.txt")
 def divide(x: float, y: float) -> float:
+    """Функция деления для примера"""
     return x / y
 
 
