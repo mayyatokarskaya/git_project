@@ -1,34 +1,38 @@
-from masks import get_mask_account, get_mask_card_number
+import re
+from datetime import datetime
+from typing import Optional
 
 
-def mask_account_card(card_numbers: str) -> str:
-    """маскируем цифры карты"""
-    card_text = ""
-    card_number = ""
-    for char in card_numbers:
-        if char.isalpha() or char.isspace():
-            card_text += char
-        if char.isdigit():
-            card_number += char
-    if len(card_number) > 16:
-        return f"{card_text} {get_mask_account(card_number)}"
-    else:
-        return f"{card_text} {get_mask_card_number(card_number)}"
+def mask_account_card(account_info: str) -> str:
+    """Обрабатывает строку с информацией о карте или счете, маскирует номер в зависимости от типа"""
+    parts = account_info.split()
+
+    if len(parts) < 2:
+        return f"Неизвестный тип карты: {parts[0]}"
+
+    card_type = " ".join(parts[:-1])
+    card_number = parts[-1]
+
+    known_card_types = ["Visa", "MasterCard", "Maestro", "Visa Platinum", "Visa Classic", "Visa Gold"]
+    if card_type in known_card_types:
+        if re.match(r"^\d{16}$", card_number):
+            return f"{card_type} {card_number[:4]} {card_number[4:6]}** **** {card_number[-4:]}"
+        else:
+            return f"Неизвестный тип карты: {card_type}"
+
+    if card_type == "Счет":
+        if card_number.isdigit() and len(card_number) > 4:
+            return f"{card_type} **{card_number[-4:]}"
+        else:
+            return f"Неизвестный тип карты: {card_type}"
+
+    return f"Неизвестный тип карты: {card_type}"
 
 
-card_numbers = input("Введите номер карты/ счета в формате Visa Platinum/Счет 7000792289606361 \n")
-masked = mask_account_card(card_numbers)
-print(masked)
-
-
-def get_date(input_date: str) -> str:
-    """форматирование даты"""
-    year = input_date[0:4]
-    month = input_date[5:7]
-    day = input_date[8:10]
-
-    return f"{day}.{month}.{year}"
-
-
-input_date = get_date("2024-03-11T02:26:18.671407")
-print(input_date)
+def get_date(date_str: str) -> Optional[str]:
+    """Преобразует строку с датой в формат "ДД.ММ.ГГГГ" """
+    try:
+        date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f")
+        return date_obj.strftime("%d.%m.%Y")
+    except ValueError:
+        return None
