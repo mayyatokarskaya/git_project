@@ -1,6 +1,7 @@
 import json
 import os
 
+
 def read_transactions(filepath):
     """Читает JSON-файл и возвращает список словарей с данными о финансовых транзакциях"""
 
@@ -9,7 +10,7 @@ def read_transactions(filepath):
         return []
 
     try:
-        with open(filepath, 'r', encoding='utf-8') as file:
+        with open(filepath, "r", encoding="utf-8") as file:
             data = json.load(file)
 
         if not isinstance(data, list):
@@ -39,5 +40,3 @@ else:
     print("Файл пустой или содержит некорректные данные.")
 
 print("Текущая рабочая директория:", os.getcwd())
-
-
