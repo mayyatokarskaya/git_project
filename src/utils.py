@@ -39,5 +39,3 @@ if __name__ == "__main__":
     filepath = os.path.join(base_dir, "data", "operation.json")
     # Получение данных о транзакциях
     read_transactions(filepath)
-
-
