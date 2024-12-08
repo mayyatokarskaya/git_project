@@ -17,6 +17,13 @@ def read_transactions(filepath):
             print(f"Ошибка: содержимое файла '{filepath}' не является списком.")
             return []
 
+        if not data:
+            print(f"Файл '{filepath}' пустой.")
+            return []
+
+        print("Транзакции успешно загружены:")
+        print(data)
+        print("Текущая рабочая директория:", os.getcwd())
         return data
 
     except json.JSONDecodeError:
@@ -27,16 +34,10 @@ def read_transactions(filepath):
         return []
 
 
-base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Корень проекта
-filepath = os.path.join(base_dir, "data", "operation.json")
-# Получение данных о транзакциях
-transactions = read_transactions(filepath)
+if __name__ == "__main__":
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Корень проекта
+    filepath = os.path.join(base_dir, "data", "operation.json")
+    # Получение данных о транзакциях
+    read_transactions(filepath)
 
-# Вывод результата
-if transactions:
-    print("Транзакции успешно загружены:")
-    print(transactions)
-else:
-    print("Файл пустой или содержит некорректные данные.")
 
-print("Текущая рабочая директория:", os.getcwd())
