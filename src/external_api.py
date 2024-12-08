@@ -9,7 +9,7 @@ API_KEY = os.getenv("API_KEY")
 
 
 def get_exchange_rate(currency):
-    """Получает курс валюты к рублю."""
+    """Получает курс валюты к рублю"""
     headers = {
         "apikey": API_KEY
     }
@@ -28,7 +28,7 @@ def get_exchange_rate(currency):
 
 
 def convert_to_rubles(transaction):
-    """Конвертирует сумму транзакции в рубли."""
+    """Конвертирует сумму транзакции в рубли"""
 
     amount = transaction.get('amount', 0)
     currency = transaction.get('currency')
@@ -43,7 +43,7 @@ def convert_to_rubles(transaction):
     raise ValueError("Unsupported currency")
 
 
-# Пример использования
+
 if __name__ == "__main__":
     transaction_usd = {'amount': 100, 'currency': 'USD'}
     transaction_eur = {'amount': 100, 'currency': 'EUR'}
