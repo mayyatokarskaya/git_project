@@ -2,53 +2,61 @@ import os
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()  # Загружаем переменные окружения из .env файла
+# Загрузка переменных окружения из файла .env
+load_dotenv()
 
-API_URL = "https://api.apilayer.com/exchangerates_data/latest"
-API_KEY = os.getenv("API_KEY")
+API_KEY = os.getenv('API_KEY')
+BASE_URL = "https://api.apilayer.com/exchangerates_data/latest"
 
 
-def get_exchange_rate(currency):
-    """Получает курс валюты к рублю"""
+def get_exchange_rate(base_currency, target_currency='RUB'):
+    """
+    Получает текущий курс валюты base_currency к target_currency.
+    """
+    url = f"{BASE_URL}?base={base_currency}&symbols={target_currency}"
     headers = {
         "apikey": API_KEY
     }
-    params = {
-        "base": currency,
-        "symbols": "RUB"
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Выбрасывает исключение, если статус ответа не 200
+        data = response.json()
+        return data['rates'][target_currency]
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Ошибка при получении курса валют: {e}")
+
+
+def convert_transaction_to_rub(transaction):
+    """
+    Конвертирует сумму транзакции в рубли.
+    """
+    try:
+        amount = transaction['amount']
+        currency = transaction['currency']
+
+        if currency == 'RUB':
+            return float(amount)
+        elif currency in ['USD', 'EUR']:
+            exchange_rate = get_exchange_rate(currency)
+            return float(amount) * exchange_rate
+        else:
+            raise ValueError(f"Неподдерживаемая валюта: {currency}")
+    except KeyError as e:
+        raise ValueError(f"Отсутствует обязательный ключ в транзакции: {e}")
+    except ValueError as e:
+        raise ValueError(f"Ошибка при конвертации транзакции: {e}")
+    except Exception as e:
+        raise Exception(f"Непредвиденная ошибка: {e}")
+
+
+# Пример использования
+if __name__ == "__main__":
+    transaction = {
+        'amount': 100,
+        'currency': 'USD'
     }
 
-    response = requests.get(API_URL, headers=headers, params=params)
-
-    if response.status_code == 200:
-        data = response.json()
-        return data['rates']['RUB']
-    else:
-        raise Exception(f"Error fetching exchange rate: {response.status_code} - {response.text}")
-
-
-def convert_to_rubles(transaction):
-    """Конвертирует сумму транзакции в рубли"""
-
-    amount = transaction.get('amount', 0)
-    currency = transaction.get('currency')
-
-    if currency == 'RUB':
-        return float(amount)  # Если уже в рублях, просто возвращаем
-
-    if currency in ['USD', 'EUR']:
-        exchange_rate = get_exchange_rate(currency)
-        return float(amount) * exchange_rate
-
-    raise ValueError("Unsupported currency")
-
-
-
-if __name__ == "__main__":
-    transaction_usd = {'amount': 100, 'currency': 'USD'}
-    transaction_eur = {'amount': 100, 'currency': 'EUR'}
-    transaction_rub = {'amount': 100, 'currency': 'RUB'}
-
-    print(convert_to_rubles(transaction_usd))  # Конвертирует USD в RUB
-    print(convert_to_rubles(transaction_eur))  # Конвертирует EUR в RUB
-    print(convert_to_rubles(transaction_rub))  # Вернет 100.0
+    try:
+        print(convert_transaction_to_rub(transaction))
+    except Exception as e:
+        print(f"Ошибка: {e}")
