@@ -44,7 +44,7 @@ def convert_transaction_to_rub(transaction):
     except KeyError as e:
         raise ValueError(f"Отсутствует обязательный ключ в транзакции: {e}")
     except ValueError as e:
-        raise ValueError(f"Ошибка при конвертации транзакции: {e}")
+        raise e  # Просто передаем исключение дальше, не оборачивая его
     except Exception as e:
         raise Exception(f"Непредвиденная ошибка: {e}")
 
