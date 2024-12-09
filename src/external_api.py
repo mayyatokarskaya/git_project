@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import time
 
 import requests
 from dotenv import load_dotenv
@@ -12,7 +13,6 @@ BASE_URL = "https://api.apilayer.com/exchangerates_data/latest"
 
 
 def get_exchange_rate(base_currency, target_currency="RUB"):
-    """Получает текущий курс валюты"""
     headers = {"apikey": API_KEY}
     params = {"base": base_currency, "symbols": target_currency}
     response = requests.get(BASE_URL, headers=headers, params=params)
@@ -22,7 +22,6 @@ def get_exchange_rate(base_currency, target_currency="RUB"):
 
 
 def convert_transaction_to_rub(transaction):
-    """Конвертирует сумму транзакции в рубли"""
     if not transaction:  # Проверка на пустой словарь
         return None
 
@@ -33,15 +32,20 @@ def convert_transaction_to_rub(transaction):
         return amount
     elif currency_code in ["USD", "EUR"]:
         exchange_rate = get_exchange_rate(currency_code)
+        time.sleep(1)
         return amount * exchange_rate
     else:
         raise ValueError(f"Unsupported currency: {currency_code}")
 
 
+# Пример использования
 if __name__ == "__main__":
+    # Относительный путь к файлу operation.json
+    # Получаем путь к корневой директории проекта
     root_dir = os.path.dirname(os.path.dirname(__file__))
     file_path = os.path.join(root_dir, "data", "operation.json")
 
+    # Открываем файл с указанием кодировки
     with open(file_path, "r", encoding="utf-8") as file:
         transactions = json.load(file)
 

@@ -1,78 +1,89 @@
 from unittest.mock import Mock, patch
 
+import pytest
 import requests
 
 from src.external_api import convert_transaction_to_rub, get_exchange_rate
 
 
-def test_convert_transaction_to_rub_rub() -> None:
-    """Тестирует конвертацию транзакции в рублях"""
-    transaction = {"amount": 100, "currency": "RUB"}
-    result = convert_transaction_to_rub(transaction)
-    assert result == 100.0
+@pytest.fixture
+def mock_getenv():
+    with patch("os.getenv") as mock:
+        mock.return_value = "test_api_key"
+        yield mock
 
 
-@patch("src.external_api.get_exchange_rate")
-def test_convert_transaction_to_rub_usd(mock_get_exchange_rate) -> None:
-    """Тестирует конвертацию транзакции в долларах"""
-    mock_get_exchange_rate.return_value = 70.0
-    transaction = {"amount": 100, "currency": "USD"}
-    result = convert_transaction_to_rub(transaction)
-    assert result == 7000.0
+@pytest.fixture
+def mock_requests_get():
+    with patch("requests.get") as mock:
+        yield mock
 
 
-def test_convert_transaction_to_rub_unsupported_currency() -> None:
-    """Тестирует обработку неподдерживаемой валюты"""
-    transaction = {"amount": 100, "currency": "GBP"}
-    try:
-        convert_transaction_to_rub(transaction)
-    except ValueError as e:
-        assert str(e) == "Неподдерживаемая валюта: GBP"
-    else:
-        assert False, "Ожидалось исключение ValueError"
-
-
-def test_convert_transaction_to_rub_missing_key() -> None:
-    """Тестирует обработку отсутствующего ключа в транзакции"""
-    transaction = {"amount": 100}
-    try:
-        convert_transaction_to_rub(transaction)
-    except ValueError as e:
-        assert str(e) == "Отсутствует обязательный ключ в транзакции: 'currency'"
-    else:
-        assert False, "Ожидалось исключение ValueError"
-
-
-@patch("src.external_api.requests.get")
-def test_get_exchange_rate(mock_get) -> None:
-    """тестирует получение курса валют"""
+def test_get_exchange_rate_success(mock_getenv, mock_requests_get):
     mock_response = Mock()
     mock_response.status_code = 200
-    mock_response.json.return_value = {"rates": {"RUB": 70.0}}
-    mock_get.return_value = mock_response
+    mock_response.json.return_value = {"rates": {"RUB": 75.0}}
+    mock_requests_get.return_value = mock_response
 
     rate = get_exchange_rate("USD")
-    assert rate == 70.0
+
+    assert rate == 75.0
+    mock_requests_get.assert_called_once_with(
+        "https://api.apilayer.com/exchangerates_data/latest",
+        headers={"apikey": "test_api_key"},
+        params={"base": "USD", "symbols": "RUB"},
+    )
 
 
-@patch("src.external_api.requests.get")
-def test_get_exchange_rate_error(mock_get) -> None:
-    """Тестирует обработку ошибки при получении курса валюты"""
-    mock_get.side_effect = requests.exceptions.RequestException("Network error")
+def test_get_exchange_rate_error(mock_requests_get):
+    mock_requests_get.side_effect = requests.exceptions.RequestException("Network error")
 
-    try:
+    with pytest.raises(requests.exceptions.RequestException) as exc_info:
         get_exchange_rate("USD")
-    except Exception as e:
-        assert str(e) == "Ошибка при получении курса валют: Network error"
-    else:
-        assert False, "Ожидалось исключение Exception"
+
+    assert str(exc_info.value) == "Network error"
 
 
-if __name__ == "__main__":
-    test_convert_transaction_to_rub_rub()
-    test_convert_transaction_to_rub_usd()
-    test_convert_transaction_to_rub_unsupported_currency()
-    test_convert_transaction_to_rub_missing_key()
-    test_get_exchange_rate()
-    test_get_exchange_rate_error()
-    print("Все тесты пройдены успешно.")
+def test_convert_transaction_to_rub_usd():
+    transaction = {"operationAmount": {"amount": 100, "currency": {"code": "USD"}}, "id": 1}
+
+    with patch("src.external_api.get_exchange_rate") as mock_get_exchange_rate:
+        mock_get_exchange_rate.return_value = 75.0
+
+        rub_amount = convert_transaction_to_rub(transaction)
+
+        assert rub_amount == 7500.0
+
+
+def test_convert_transaction_to_rub_eur():
+    transaction = {"operationAmount": {"amount": 100, "currency": {"code": "EUR"}}, "id": 2}
+
+    with patch("src.external_api.get_exchange_rate") as mock_get_exchange_rate:
+        mock_get_exchange_rate.return_value = 80.0
+
+        rub_amount = convert_transaction_to_rub(transaction)
+
+        assert rub_amount == 8000.0
+
+
+def test_convert_transaction_to_rub_already_in_rub():
+    transaction = {"operationAmount": {"amount": 100, "currency": {"code": "RUB"}}, "id": 3}
+
+    rub_amount = convert_transaction_to_rub(transaction)
+
+    assert rub_amount == 100.0
+
+
+def test_convert_transaction_to_rub_unsupported_currency():
+    transaction_invalid = {"operationAmount": {"amount": 100, "currency": {"code": "GBP"}}, "id": 4}
+
+    with pytest.raises(ValueError) as exc_info:
+        convert_transaction_to_rub(transaction_invalid)
+
+    assert str(exc_info.value) == "Unsupported currency: GBP"
+
+
+def test_convert_transaction_to_rub_empty_transaction():
+    result = convert_transaction_to_rub(None)
+
+    assert result is None
