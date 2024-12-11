@@ -1,19 +1,21 @@
 import logging
 import os
 
-log_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Путь к папке logs относительно текущей рабочей директории
-log_file_path_utils = os.path.join(log_dir, "logs", 'utils.log')  # Путь к файлу лога для модуля utils
+log_dir = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))
+)  # Путь к папке logs относительно текущей рабочей директории
+log_file_path_utils = os.path.join(log_dir, "logs", "utils.log")  # Путь к файлу лога для модуля utils
 
 # Настройка логирования для модуля utils
-logger_utils = logging.getLogger('utils')
+logger_utils = logging.getLogger("utils")
 logger_utils.setLevel(logging.DEBUG)  # Устанавливаем уровень логирования DEBUG
 
 # Создаем обработчик, который записывает логи в файл
-file_handler_utils = logging.FileHandler(log_file_path_utils, encoding='utf-8', mode='w')
+file_handler_utils = logging.FileHandler(log_file_path_utils, encoding="utf-8", mode="w")
 file_handler_utils.setLevel(logging.DEBUG)  # Записываем все логи, начиная с уровня DEBUG
 
 # Настройка форматтера
-file_formatter_utils = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_formatter_utils = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 file_handler_utils.setFormatter(file_formatter_utils)
 
 # Добавляем обработчик в логер
