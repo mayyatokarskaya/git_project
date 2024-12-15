@@ -1,6 +1,7 @@
-import pandas as pd
-from typing import List, Dict
 import os
+from typing import Dict, List
+
+import pandas as pd
 
 
 def read_transactions_from_csv(file_path: str) -> List[Dict[str, any]]:
@@ -23,7 +24,6 @@ def read_transactions_from_excel(file_path: str) -> List[Dict[str, any]]:
     except Exception as e:
         print(f"Ошибка при чтении Excel-файла: {e}")
         return []
-
 
 
 # Определение базовой директории как родителя текущего файла
