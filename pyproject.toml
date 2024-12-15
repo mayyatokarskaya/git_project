@@ -7,6 +7,11 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+python-dotenv = "^1.0.1"
+requests = "^2.32.3"
+pandas = "^2.2.3"
+openpyxl = "^3.1.5"
+
 
 
 [tool.poetry.group.lint.dependencies]
@@ -41,3 +46,10 @@ line_length = 119
 disallow_untyped_defs = true
 warn_return_any = true
 exclude = 'venv'
+
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
