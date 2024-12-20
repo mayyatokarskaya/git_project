@@ -1,52 +1,37 @@
-from unittest.mock import mock_open, patch
-
-from src.utils import read_transactions
-
-
-def test_read_transactions_success():
-    with patch("os.path.exists") as mock_exists:
-        with patch("builtins.open", new_callable=mock_open, read_data='[{"id": 1, "amount": 100}]'):
-            mock_exists.return_value = True  # Симулируем существование файла
-
-            result = read_transactions("dummy_path.json")
-
-            assert len(result) == 1
-            assert result[0]["id"] == 1
-            assert result[0]["amount"] == 100
+from unittest.mock import patch
+from src.utils import some_utils_function, logger_utils
 
 
-def test_file_not_found():
-    with patch("os.path.exists") as mock_exists:
-        mock_exists.return_value = False  # Симулируем отсутствие файла
+def test_some_utils_function_success():
+    data = [1, 2, 3, 4]
+    with patch.object(logger_utils, 'info') as mock_info, patch.object(logger_utils, 'error') as mock_error:
+        result = some_utils_function(data)
+        assert result == [2, 4, 6, 8]
+        mock_info.assert_called_once_with("Операция выполнена успешно.")
+        mock_error.assert_not_called()
 
-        result = read_transactions("dummy_path.json")
 
+def test_some_utils_function_empty_data():
+    data = []
+    with patch.object(logger_utils, 'info') as mock_info, patch.object(logger_utils, 'error') as mock_error:
+        result = some_utils_function(data)
         assert result == []
+        mock_error.assert_called_once_with("Ошибка: данные пустые.")
+        mock_info.assert_not_called()
 
 
-def test_invalid_json():
-    with patch("os.path.exists") as mock_exists:
-        with patch("builtins.open", new_callable=mock_open, read_data="not a json"):
-            mock_exists.return_value = True  # Симулируем существование файла
-
-            result = read_transactions("dummy_path.json")
-
-            assert result == []
-
-
-def test_not_a_list():
-    with patch("os.path.exists") as mock_exists:
-        with patch("builtins.open", new_callable=mock_open, read_data="{}"):  # Не список
-            mock_exists.return_value = True  # Симулируем существование файла
-
-            result = read_transactions("dummy_path.json")
-
-            assert result == []
+def test_some_utils_function_exception():
+    data = [1, 2, "three", 4]  # Пример данных, которые вызовут исключение
+    with patch.object(logger_utils, 'info') as mock_info, patch.object(logger_utils, 'error') as mock_error:
+        result = some_utils_function(data)
+        assert result == []
+        mock_error.assert_called_once()  # Проверяем, что была вызвана ошибка
+        mock_info.assert_not_called()
 
 
 if __name__ == "__main__":
     # Запускаем тесты и выводим результаты
-    for test in [test_read_transactions_success, test_file_not_found, test_invalid_json, test_not_a_list]:
+    for test in [test_some_utils_function_success, test_some_utils_function_empty_data, test_some_utils_function_exception]:
         try:
             test()
             print(f"{test.__name__}: Passed")
