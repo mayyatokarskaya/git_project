@@ -1,8 +1,11 @@
-import json
 import csv
+import json
+
 import pandas as pd
-from src.read_tranzaction import search_transactions
+
 from src.count_operations_by_category import count_operations_by_category
+from src.search_tranzaction import search_transactions
+
 
 def load_transactions_from_json():
     """Загружает транзакции из JSON-файла."""
@@ -14,6 +17,7 @@ def load_transactions_from_json():
         print(f"Ошибка загрузки файла: {e}")
         return []
 
+
 def load_transactions_from_csv():
     """Загружает транзакции из CSV-файла."""
     filename = "C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\financial\\transactions.csv"
@@ -24,15 +28,17 @@ def load_transactions_from_csv():
         print(f"Ошибка загрузки файла: {e}")
         return []
 
+
 def load_transactions_from_xlsx():
     """Загружает транзакции из XLSX-файла."""
     filename = "C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\financial\\transactions_excel.xlsx"
     try:
         df = pd.read_excel(filename)
-        return df.to_dict('records')
+        return df.to_dict("records")
     except Exception as e:
         print(f"Ошибка загрузки файла: {e}")
         return []
+
 
 def filter_transactions_by_status(transactions):
     """Фильтрует транзакции по заданному статусу."""
@@ -41,13 +47,15 @@ def filter_transactions_by_status(transactions):
         status = input("Введите статус для фильтрации (EXECUTED, CANCELED, PENDING): ").strip().upper()
         if status in valid_statuses:
             return [tx for tx in transactions if tx.get("status", "").upper() == status]
-        print(f"Статус операции \"{status}\" недоступен.")
+        print(f'Статус операции "{status}" недоступен.')
+
 
 def sort_transactions(transactions):
     """Сортирует транзакции по дате в заданном порядке."""
     sort_order = input("Отсортировать по возрастанию или по убыванию? ").strip().lower()
     reverse_sort = sort_order == "по убыванию"
     return sorted(transactions, key=lambda tx: tx.get("date", ""), reverse=reverse_sort)
+
 
 def main():
     """Основная функция программы, связывающая все функциональности."""
@@ -78,7 +86,7 @@ def main():
             search_string=keyword,
             csv_file="C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\financial\\transactions.csv",
             excel_file="C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\financial\\transactions_excel.xlsx",
-            json_file="C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\data\\operation.json"
+            json_file="C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\data\\operation.json",
         )
 
     operation_counts = count_operations_by_category(transactions, ["EXECUTED", "CANCELED", "PENDING"])
@@ -90,7 +98,10 @@ def main():
     else:
         print(f"Всего банковских операций в выборке: {len(transactions)}")
         for tx in transactions:
-            print(f"{tx.get('date')} {tx.get('description')}\n{tx.get('details')}\nСумма: {tx.get('amount')} {tx.get('currency')}")
+            print(
+                f"{tx.get('date')} {tx.get('description')}\n{tx.get('details')}\nСумма: {tx.get('amount')} {tx.get('currency')}"
+            )
+
 
 if __name__ == "__main__":
     main()

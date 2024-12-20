@@ -1,17 +1,17 @@
-2024-12-20 23:48:53,013 - masks - INFO - Successfully masked card number: 7000792289606361
-2024-12-20 23:48:53,016 - masks - INFO - Successfully masked card number: 1234567812345678
-2024-12-20 23:48:53,017 - masks - INFO - Successfully masked card number: 1111222233334444
-2024-12-20 23:48:53,019 - masks - ERROR - Error in get_mask_card_number: Invalid card number
-2024-12-20 23:48:53,019 - masks - ERROR - Error in get_mask_card_number: Invalid card number
-2024-12-20 23:48:53,022 - masks - ERROR - Error in get_mask_card_number: Invalid card number
-2024-12-20 23:48:53,023 - masks - ERROR - Error in get_mask_card_number: Invalid card number
-2024-12-20 23:48:53,025 - masks - INFO - Successfully masked account number: 73654108430135874305
-2024-12-20 23:48:53,028 - masks - INFO - Successfully masked account number: 123456789
-2024-12-20 23:48:53,030 - masks - INFO - Successfully masked account number: 9876543210
-2024-12-20 23:48:53,031 - masks - INFO - Successfully masked account number: 54321
-2024-12-20 23:48:53,033 - masks - INFO - Successfully masked account number: 12
-2024-12-20 23:48:53,035 - masks - INFO - Successfully masked account number: 1
-2024-12-20 23:48:53,036 - masks - INFO - Successfully masked account number: 
-2024-12-20 23:48:53,038 - masks - INFO - Successfully masked account number: 1
-2024-12-20 23:48:53,038 - masks - INFO - Successfully masked account number: 12
-2024-12-20 23:48:53,038 - masks - INFO - Successfully masked account number: 123
+2024-12-20 23:50:47,295 - masks - INFO - Successfully masked card number: 7000792289606361
+2024-12-20 23:50:47,299 - masks - INFO - Successfully masked card number: 1234567812345678
+2024-12-20 23:50:47,301 - masks - INFO - Successfully masked card number: 1111222233334444
+2024-12-20 23:50:47,305 - masks - ERROR - Error in get_mask_card_number: Invalid card number
+2024-12-20 23:50:47,308 - masks - ERROR - Error in get_mask_card_number: Invalid card number
+2024-12-20 23:50:47,310 - masks - ERROR - Error in get_mask_card_number: Invalid card number
+2024-12-20 23:50:47,312 - masks - ERROR - Error in get_mask_card_number: Invalid card number
+2024-12-20 23:50:47,314 - masks - INFO - Successfully masked account number: 73654108430135874305
+2024-12-20 23:50:47,316 - masks - INFO - Successfully masked account number: 123456789
+2024-12-20 23:50:47,319 - masks - INFO - Successfully masked account number: 9876543210
+2024-12-20 23:50:47,323 - masks - INFO - Successfully masked account number: 54321
+2024-12-20 23:50:47,325 - masks - INFO - Successfully masked account number: 12
+2024-12-20 23:50:47,327 - masks - INFO - Successfully masked account number: 1
+2024-12-20 23:50:47,330 - masks - INFO - Successfully masked account number: 
+2024-12-20 23:50:47,332 - masks - INFO - Successfully masked account number: 1
+2024-12-20 23:50:47,332 - masks - INFO - Successfully masked account number: 12
+2024-12-20 23:50:47,332 - masks - INFO - Successfully masked account number: 123

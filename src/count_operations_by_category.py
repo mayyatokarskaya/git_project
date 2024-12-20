@@ -1,9 +1,10 @@
-import re
 import csv
 import json
-import pandas as pd
-from pathlib import Path
+import re
 from collections import Counter
+from pathlib import Path
+
+import pandas as pd
 
 
 def count_operations_by_category(search_string, categories, csv_file=None, excel_file=None, json_file=None):
@@ -28,19 +29,19 @@ def count_operations_by_category(search_string, categories, csv_file=None, excel
 
     # Определение путей к файлам, если они не переданы
     if csv_file is None:
-        csv_file = base_path / 'financial' / 'transactions.csv'
+        csv_file = base_path / "financial" / "transactions.csv"
     if excel_file is None:
-        excel_file = base_path / 'financial' / 'transactions_excel.xlsx'
+        excel_file = base_path / "financial" / "transactions_excel.xlsx"
     if json_file is None:
-        json_file = base_path / 'data' / 'operation.json'
+        json_file = base_path / "data" / "operation.json"
 
     # Чтение данных из CSV-файла
     if csv_file:
         try:
-            with open(csv_file, mode='r', encoding='utf-8') as file:
-                reader = csv.DictReader(file, delimiter=';')  # Указываем разделитель ';'
+            with open(csv_file, mode="r", encoding="utf-8") as file:
+                reader = csv.DictReader(file, delimiter=";")  # Указываем разделитель ';'
                 for row in reader:
-                    description = row.get('description', '').strip()
+                    description = row.get("description", "").strip()
                     if pattern.search(description):
                         for category in categories:
                             if category.lower() in description.lower():
@@ -54,7 +55,7 @@ def count_operations_by_category(search_string, categories, csv_file=None, excel
         try:
             df = pd.read_excel(excel_file)
             for _, row in df.iterrows():
-                description = str(row.get('description', '')).strip()
+                description = str(row.get("description", "")).strip()
                 if pattern.search(description):
                     for category in categories:
                         if category.lower() in description.lower():
@@ -66,10 +67,10 @@ def count_operations_by_category(search_string, categories, csv_file=None, excel
     # Чтение данных из JSON-файла
     if json_file:
         try:
-            with open(json_file, mode='r', encoding='utf-8') as file:
+            with open(json_file, mode="r", encoding="utf-8") as file:
                 data = json.load(file)
                 for item in data:
-                    description = item.get('description', '').strip()
+                    description = item.get("description", "").strip()
                     if pattern.search(description):
                         for category in categories:
                             if category.lower() in description.lower():
@@ -81,7 +82,8 @@ def count_operations_by_category(search_string, categories, csv_file=None, excel
     # Возвращаем словарь с результатами
     return dict(counter)
 
-search_string = 'Открытие вклада'
+
+search_string = "Открытие вклада"
 categories = ["Перевод", "Открытие вклада", "Перевод со счета на счет"]
 result = count_operations_by_category(search_string, categories)
 print(result)
