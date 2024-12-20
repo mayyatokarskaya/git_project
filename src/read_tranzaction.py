@@ -1,60 +1,133 @@
 import re
-import csv
 import json
+import csv
 import pandas as pd
 from pathlib import Path
 
+# Определяем базовый путь к корню проекта
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-def search_transactions(search_string, csv_file=None, excel_file=None, json_file=None):
-    """Функция для поиска транзакций в трех файлах по заданной строке"""
 
-    # Компиляция регулярного выражения для поиска
-    pattern = re.compile(re.escape(search_string), re.IGNORECASE)
+def load_transactions_from_json(file_path):
+    """
+    Загружает данные из JSON файла.
+    :param file_path: Путь к файлу JSON.
+    :return: Список словарей с транзакциями.
+    """
+    full_path = BASE_DIR / file_path
+    try:
+        with open(full_path, 'r', encoding='utf-8') as file:
+            transactions = json.load(file)
+            print(f"Загружено транзакций из JSON: {len(transactions)}")
+            return transactions
+    except Exception as e:
+        print(f"Ошибка при загрузке JSON: {e}")
+        return []
 
-    result = []
 
-    base_path = Path(__file__).resolve().parent.parent  # Переходим на уровень выше (корневая папка проекта)
+def load_transactions_from_csv(file_path):
+    """
+    Загружает данные из CSV файла.
+    :param file_path: Путь к файлу CSV.
+    :return: Список словарей с транзакциями.
+    """
+    full_path = BASE_DIR / file_path
+    transactions = []
+    try:
+        with open(full_path, 'r', encoding='utf-8') as file:
+            reader = csv.DictReader(file, delimiter=';')
+            for row in reader:
+                try:
+                    # Проверяем, что значение id не пустое
+                    if row['id'].strip() == '':
+                        row['id'] = 0  # Заменяем пустое значение на 0
+                    else:
+                        row['id'] = int(row['id'])
 
-    # Определение путей к файлам, если они не переданы
-    if csv_file is None:
-        csv_file = base_path / "financial" / "transactions.csv"
-    if excel_file is None:
-        excel_file = base_path / "financial" / "transactions_excel.xlsx"
-    if json_file is None:
-        json_file = base_path / "data" / "operation.json"
+                    # Проверяем, что значение amount не пустое
+                    if row['amount'].strip() == '':
+                        row['amount'] = 0.0  # Заменяем пустое значение на 0.0
+                    else:
+                        row['amount'] = float(row['amount'])
 
-    # Чтение данных из CSV-файла
-    if csv_file:
+                    transactions.append(row)
+                except ValueError as e:
+                    print(f"Ошибка преобразования данных: {e}, строка: {row}")
+        print(f"Загружено транзакций из CSV: {len(transactions)}")
+        return transactions
+    except Exception as e:
+        print(f"Ошибка при загрузке CSV: {e}")
+        return []
+
+
+def load_transactions_from_xlsx(file_path):
+    """
+    Загружает данные из XLSX файла.
+    :param file_path: Путь к файлу XLSX.
+    :return: Список словарей с транзакциями.
+    """
+    full_path = BASE_DIR / file_path
+    try:
+        df = pd.read_excel(full_path)
+
+        # Заменяем пустые значения на NaN
+        df.replace('', pd.NA, inplace=True)
+
+        # Преобразуем столбцы в нужные типы
         try:
-            with open(csv_file, mode="r", encoding="utf-8") as file:
-                reader = csv.DictReader(file, delimiter=";")  # Указываем разделитель ';'
-                for row in reader:
-                    if pattern.search(row.get("description", "")):
-                        result.append(row)
-        except FileNotFoundError:
-            print(f"Файл {csv_file} не найден.")
+            df['id'] = df['id'].astype('Int64')  # Используем Int64 для обработки NaN
+            df['amount'] = df['amount'].astype(float)
+        except Exception as e:
+            print(f"Ошибка преобразования данных в XLSX: {e}")
 
-    # Чтение данных из Excel-файла
-    if excel_file:
-        try:
-            df = pd.read_excel(excel_file)
-            for _, row in df.iterrows():
-                description = str(row.get("description", ""))
-                if pattern.search(description):
-                    result.append(row.to_dict())
-        except FileNotFoundError:
-            print(f"Файл {excel_file} не найден.")
+        transactions = df.to_dict('records')
+        print(f"Загружено транзакций из XLSX: {len(transactions)}")
+        return transactions
+    except Exception as e:
+        print(f"Ошибка при загрузке XLSX: {e}")
+        return []
 
-    # Чтение данных из JSON-файла
-    if json_file:
-        try:
-            with open(json_file, mode="r", encoding="utf-8") as file:
-                data = json.load(file)
-                for item in data:
-                    if pattern.search(item.get("description", "")):
-                        result.append(item)
-        except FileNotFoundError:
-            print(f"Файл {json_file} не найден.")
 
-    return result
+def filter_transactions_by_description(transactions, search_string):
+    """
+    Фильтрует список транзакций по описанию с использованием регулярных выражений.
+    :param transactions: Список словарей с данными о транзакциях.
+    :param search_string: Строка поиска для фильтрации.
+    :return: Список словарей, у которых в описании есть данная строка.
+    """
+    # Компиляция регулярного выражения
+    pattern = re.compile(search_string, re.IGNORECASE)
 
+    # Фильтрация транзакций
+    filtered_transactions = [
+        transaction for transaction in transactions
+        if isinstance(transaction.get('description'), str) and pattern.search(transaction['description'])
+    ]
+
+    return filtered_transactions
+
+
+# Пример использования
+if __name__ == "__main__":
+    # Указываем относительные пути к файлам
+    json_file = "data/operation.json"
+    csv_file = "financial/transactions.csv"
+    xlsx_file = "financial/transactions_excel.xlsx"
+
+    # Загрузка данных из JSON
+    transactions_json = load_transactions_from_json(json_file)
+
+    # Загрузка данных из CSV
+    transactions_csv = load_transactions_from_csv(csv_file)
+
+    # Загрузка данных из XLSX
+    transactions_xlsx = load_transactions_from_xlsx(xlsx_file)
+
+    # Объединение всех транзакций
+    all_transactions = transactions_json + transactions_csv + transactions_xlsx
+
+    # Поиск по описанию
+    search_string = "обмен"
+    filtered_transactions = filter_transactions_by_description(all_transactions, search_string)
+    print("Найдено транзакций по запросу:", len(filtered_transactions))
+    print(filtered_transactions)
