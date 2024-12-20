@@ -1,89 +1,67 @@
 import csv
 import json
-import re
 from collections import Counter
-from pathlib import Path
 
 import pandas as pd
 
 
-def count_operations_by_category(search_string, categories, csv_file=None, excel_file=None, json_file=None):
-    """
-    Функция для подсчета количества банковских операций определенного типа.
+def read_json(file_path):
+    """Читает данные из JSON-файла и возвращает их в виде списка словарей"""
+    with open(file_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+    return data
 
-    :param search_string: Строка для поиска в описании транзакций.
-    :param categories: Список категорий операций.
-    :param csv_file: Путь к CSV-файлу с транзакциями (по умолчанию None).
-    :param excel_file: Путь к Excel-файлу с транзакциями (по умолчанию None).
-    :param json_file: Путь к JSON-файлу с транзакциями (по умолчанию None).
-    :return: Словарь, в котором ключи — это названия категорий, а значения — количество операций в каждой категории.
-    """
-    # Компиляция регулярного выражения для поиска
-    pattern = re.compile(re.escape(search_string), re.IGNORECASE)
 
-    # Создаем счетчик для подсчета операций
+def read_csv(file_path):
+    """Читает данные из JSON-файла и возвращает их в виде списка словарей"""
+    with open(file_path, "r", encoding="utf-8") as file:
+        reader = csv.DictReader(file, delimiter=";")
+        data = [row for row in reader]
+    return data
+
+
+def read_excel(file_path):
+    """Читает данные из Excel-файла и возвращает их в виде списка словарей"""
+    df = pd.read_excel(file_path)
+    data = df.to_dict(orient="records")
+    return data
+
+
+def extract_categories(operations):
+    """Извлекает уникальные категории (описания) из списка операций"""
+    categories = set()
+    for operation in operations:
+        description = operation.get("description")
+        if description:
+            categories.add(description)
+    return list(categories)
+
+
+def count_operations_by_category(operations, categories):
+    """Подсчитывает количество банковских операций по каждой категории"""
     counter = Counter()
 
-    # Определение корневой папки проекта
-    base_path = Path(__file__).resolve().parent.parent  # Переходим на уровень выше (корневая папка проекта)
+    for operation in operations:
+        description = operation.get("description")
+        if description in categories:
+            counter[description] += 1
 
-    # Определение путей к файлам, если они не переданы
-    if csv_file is None:
-        csv_file = base_path / "financial" / "transactions.csv"
-    if excel_file is None:
-        excel_file = base_path / "financial" / "transactions_excel.xlsx"
-    if json_file is None:
-        json_file = base_path / "data" / "operation.json"
-
-    # Чтение данных из CSV-файла
-    if csv_file:
-        try:
-            with open(csv_file, mode="r", encoding="utf-8") as file:
-                reader = csv.DictReader(file, delimiter=";")  # Указываем разделитель ';'
-                for row in reader:
-                    description = row.get("description", "").strip()
-                    if pattern.search(description):
-                        for category in categories:
-                            if category.lower() in description.lower():
-                                counter[category] += 1
-                                break
-        except FileNotFoundError:
-            print(f"Файл {csv_file} не найден.")
-
-    # Чтение данных из Excel-файла
-    if excel_file:
-        try:
-            df = pd.read_excel(excel_file)
-            for _, row in df.iterrows():
-                description = str(row.get("description", "")).strip()
-                if pattern.search(description):
-                    for category in categories:
-                        if category.lower() in description.lower():
-                            counter[category] += 1
-                            break
-        except FileNotFoundError:
-            print(f"Файл {excel_file} не найден.")
-
-    # Чтение данных из JSON-файла
-    if json_file:
-        try:
-            with open(json_file, mode="r", encoding="utf-8") as file:
-                data = json.load(file)
-                for item in data:
-                    description = item.get("description", "").strip()
-                    if pattern.search(description):
-                        for category in categories:
-                            if category.lower() in description.lower():
-                                counter[category] += 1
-                                break
-        except FileNotFoundError:
-            print(f"Файл {json_file} не найден.")
-
-    # Возвращаем словарь с результатами
     return dict(counter)
 
 
-search_string = "Открытие вклада"
-categories = ["Перевод", "Открытие вклада", "Перевод со счета на счет"]
-result = count_operations_by_category(search_string, categories)
-print(result)
+def process_data():
+    """Основная функция для чтения данных из файлов, извлечения категорий и подсчета операций"""
+    json_data = read_json("../data/operation.json")
+    csv_data = read_csv("../financial/transactions.csv")
+    excel_data = read_excel("../financial/transactions_excel.xlsx")
+    all_operations = json_data + csv_data + excel_data
+    categories = extract_categories(all_operations)
+    result = count_operations_by_category(all_operations, categories)
+    print("Количество операций по категориям:")
+    for category, count in result.items():
+        print(f"{category}: {count}")
+
+
+# Запуск обработки данных
+if __name__ == "__main__":
+    process_data()
