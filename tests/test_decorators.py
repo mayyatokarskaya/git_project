@@ -32,7 +32,22 @@ def test_divide_by_zero(capsys):
 
 def test_add_to_file(tmp_path):
     """Тестирование логирования в файл"""
-    log_file = tmp_path / "tests/mylog.txt"
+        # Создаем временный файл в директории tmp_path
+    log_file = tmp_path / 'mylog.txt'
+
+    # Создаем файл, если он не существует
+    with open(log_file, 'w') as f:
+        f.write('')
+
+    # Теперь выполняем тест
+    # Пример: добавляем строку в файл
+    with open(log_file, 'a') as f:
+        f.write('Тестовая строка\n')
+
+    # Проверяем, что строка была добавлена
+    with open(log_file, 'r') as f:
+        content = f.read()
+        assert 'Тестовая строка' in content
 
     @log(filename=str(log_file))
     def add(x: int, y: int) -> int:
