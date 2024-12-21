@@ -4,7 +4,7 @@ import json
 import pandas as pd
 
 from src.count_operations_by_category import count_operations_by_category
-from src.search_tranzaction import search_transactions
+from src.search_tranzaction import filter_transactions_by_description
 
 
 def load_transactions_from_json():
@@ -46,7 +46,7 @@ def filter_transactions_by_status(transactions):
     while True:
         status = input("Введите статус для фильтрации (EXECUTED, CANCELED, PENDING): ").strip().upper()
         if status in valid_statuses:
-            return [tx for tx in transactions if tx.get("status", "").upper() == status]
+            return [tx for tx in transactions if tx.get("state", "").upper() == status]
         print(f'Статус операции "{status}" недоступен.')
 
 
@@ -82,12 +82,7 @@ def main():
 
     if input("Отфильтровать по описанию? Да/Нет: ").strip().lower() == "да":
         keyword = input("Введите ключевое слово для фильтрации: ").strip()
-        transactions = search_transactions(
-            search_string=keyword,
-            csv_file="C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\financial\\transactions.csv",
-            excel_file="C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\financial\\transactions_excel.xlsx",
-            json_file="C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\data\\operation.json",
-        )
+        transactions = filter_transactions_by_description(transactions, keyword)
 
     operation_counts = count_operations_by_category(transactions, ["EXECUTED", "CANCELED", "PENDING"])
     print("Количество операций по категориям:", operation_counts)
@@ -98,8 +93,11 @@ def main():
     else:
         print(f"Всего банковских операций в выборке: {len(transactions)}")
         for tx in transactions:
+            # Исправлено: получаем данные о сумме и валюте из вложенных структур
+            amount = tx.get("operationAmount", {}).get("amount", "Неизвестно")
+            currency = tx.get("operationAmount", {}).get("currency", {}).get("name", "Неизвестно")
             print(
-                f"{tx.get('date')} {tx.get('description')}\n{tx.get('details')}\nСумма: {tx.get('amount')} {tx.get('currency')}"
+                f"{tx.get('date')} {tx.get('description')}\nСумма: {amount} {currency}"
             )
 
 
