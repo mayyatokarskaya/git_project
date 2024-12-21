@@ -1,9 +1,4 @@
-import pytest
-from collections import Counter
-
-# Импортируем функцию, которую будем тестировать
 from src.count_operations_by_category import count_operations_by_category
-
 
 # Тестовые данные
 test_data = [

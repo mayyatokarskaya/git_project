@@ -96,9 +96,7 @@ def main():
             # Исправлено: получаем данные о сумме и валюте из вложенных структур
             amount = tx.get("operationAmount", {}).get("amount", "Неизвестно")
             currency = tx.get("operationAmount", {}).get("currency", {}).get("name", "Неизвестно")
-            print(
-                f"{tx.get('date')} {tx.get('description')}\nСумма: {amount} {currency}"
-            )
+            print(f"{tx.get('date')} {tx.get('description')}\nСумма: {amount} {currency}")
 
 
 if __name__ == "__main__":
