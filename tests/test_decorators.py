@@ -32,7 +32,7 @@ def test_divide_by_zero(capsys):
 
 def test_add_to_file(tmp_path):
     """Тестирование логирования в файл"""
-    log_file = tmp_path / "src/mylog.txt"
+    log_file = tmp_path / "tests/mylog.txt"
 
     @log(filename=str(log_file))
     def add(x: int, y: int) -> int:
