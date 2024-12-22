@@ -14,11 +14,16 @@ def filter_by_state(transactions):
 
 def parse_date(record: Dict[str, str]) -> datetime:
     """Парсит строку даты в объект datetime."""
+    date_str = record["date"]
     try:
-        # Поддерживаем формат даты с временем и миллисекундами
-        return datetime.strptime(record["date"], "%Y-%m-%dT%H:%M:%S.%f")
-    except ValueError as e:
-        raise ValueError(f"Invalid date format in record: {record['date']}") from e
+        # Пробуем парсить дату в формате "%Y-%m-%dT%H:%M:%S.%f" (для JSON)
+        return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f")
+    except ValueError:
+        try:
+            # Если не удалось, пробуем парсить дату в формате "%Y-%m-%dT%H:%M:%SZ" (для CSV)
+            return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
+        except ValueError as e:
+            raise ValueError(f"Invalid date format in record: {date_str}") from e
 
 
 def sort_by_date(records: List[Dict[str, str]], reverse: bool = False) -> List[Dict[str, str]]:
