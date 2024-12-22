@@ -2,14 +2,18 @@ from datetime import datetime
 from typing import Dict, List
 
 
-def filter_by_state(records: List[Dict[str, str]], state: str = "EXECUTED") -> List[Dict[str, str]]:
-    """Фильтрует список словарей по значению ключа 'state'"""
-
-    return [record for record in records if record.get("state") == state]
+def filter_by_state(transactions):
+    """Фильтрует транзакции по заданному статусу."""
+    valid_statuses = {"EXECUTED", "CANCELED", "PENDING"}
+    while True:
+        status = input("Введите статус для фильтрации (EXECUTED, CANCELED, PENDING): ").strip().upper()
+        if status in valid_statuses:
+            return [tx for tx in transactions if tx.get("state", "").upper() == status]
+        print(f'Статус операции "{status}" недоступен.')
 
 
 def sort_by_date(records: List[Dict[str, str]], reverse: bool = False) -> List[Dict[str, str]]:
-    """Сортирует записи по дате. Выбрасывает ValueError, если дата имеет некорректный формат"""
+    """Сортирует записи по дате. Выбрасывает ValueError, если дата имеет некорректный формат."""
 
     def parse_date(record: Dict[str, str]) -> datetime:
         """Парсит строку даты в объект datetime."""
@@ -23,3 +27,16 @@ def sort_by_date(records: List[Dict[str, str]], reverse: bool = False) -> List[D
         key=lambda record: (parse_date(record), record["amount"]),
         reverse=reverse,
     )
+
+def sort_transactions(transactions: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    """Сортирует транзакции по дате в заданном порядке."""
+    sort_order = input("Отсортировать по возрастанию или по убыванию? ").strip().lower()
+    reverse_sort = sort_order == "по убыванию"
+
+    # Используем sort_by_date для сортировки с учетом reverse_sort
+    return sort_by_date(transactions, reverse=reverse_sort)
+
+
+def filter_rub_transactions(transactions):
+    """Фильтрует транзакции, оставляя только рублевые."""
+    return [tx for tx in transactions if tx.get("operationAmount", {}).get("currency", {}).get("code") == "RUB"]
