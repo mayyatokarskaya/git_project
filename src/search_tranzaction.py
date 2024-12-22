@@ -9,7 +9,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 def load_transactions_from_json(file_path):
     """Загружает данные из JSON файла"""
-
     full_path = BASE_DIR / file_path
     try:
         with open(full_path, "r", encoding="utf-8") as file:
@@ -23,7 +22,6 @@ def load_transactions_from_json(file_path):
 
 def load_transactions_from_csv(file_path):
     """Загружает данные из CSV файла"""
-
     full_path = BASE_DIR / file_path
     transactions = []
     try:
@@ -43,7 +41,23 @@ def load_transactions_from_csv(file_path):
                     else:
                         row["amount"] = float(row["amount"])
 
-                    transactions.append(row)
+                    # Преобразуем данные в формат, совместимый с JSON
+                    transaction = {
+                        "id": row["id"],
+                        "state": row["state"],
+                        "date": row["date"],
+                        "operationAmount": {
+                            "amount": row["amount"],
+                            "currency": {
+                                "name": row["currency_name"],
+                                "code": row["currency_code"]
+                            }
+                        },
+                        "from": row["from"],
+                        "to": row["to"],
+                        "description": row["description"]
+                    }
+                    transactions.append(transaction)
                 except ValueError as e:
                     print(f"Ошибка преобразования данных: {e}, строка: {row}")
         print(f"Загружено транзакций из CSV: {len(transactions)}")
@@ -55,7 +69,6 @@ def load_transactions_from_csv(file_path):
 
 def load_transactions_from_xlsx(file_path):
     """Загружает данные из XLSX файла"""
-
     full_path = BASE_DIR / file_path
     try:
         df = pd.read_excel(full_path)
@@ -67,10 +80,33 @@ def load_transactions_from_xlsx(file_path):
         try:
             df["id"] = df["id"].astype("Int64")
             df["amount"] = df["amount"].astype(float)
+            # Приводим столбцы state, from и to к строкам и заменяем NaN на пустую строку
+            df["state"] = df["state"].astype(str).fillna("")
+            df["from"] = df["from"].astype(str).fillna("")
+            df["to"] = df["to"].astype(str).fillna("")
         except Exception as e:
             print(f"Ошибка преобразования данных в XLSX: {e}")
 
-        transactions = df.to_dict("records")
+        # Преобразуем данные в формат, совместимый с JSON
+        transactions = []
+        for _, row in df.iterrows():
+            transaction = {
+                "id": row["id"],
+                "state": row["state"],
+                "date": row["date"],
+                "operationAmount": {
+                    "amount": row["amount"],
+                    "currency": {
+                        "name": row["currency_name"],
+                        "code": row["currency_code"]
+                    }
+                },
+                "from": row["from"],
+                "to": row["to"],
+                "description": row["description"]
+            }
+            transactions.append(transaction)
+
         print(f"Загружено транзакций из XLSX: {len(transactions)}")
         return transactions
     except Exception as e:

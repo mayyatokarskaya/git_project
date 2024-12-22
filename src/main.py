@@ -1,61 +1,13 @@
-import csv
-import json
-
-import pandas as pd
+from pathlib import Path
 
 from src.count_operations_by_category import count_operations_by_category
 from src.search_tranzaction import filter_transactions_by_description
+from search_tranzaction import load_transactions_from_json, load_transactions_from_csv, load_transactions_from_xlsx
+from processing import filter_by_state, sort_transactions, filter_rub_transactions
+from widget import format_transaction
 
-
-def load_transactions_from_json():
-    """Загружает транзакции из JSON-файла."""
-    filename = "C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\data\\operation.json"
-    try:
-        with open(filename, "r", encoding="utf-8") as file:
-            return json.load(file)
-    except Exception as e:
-        print(f"Ошибка загрузки файла: {e}")
-        return []
-
-
-def load_transactions_from_csv():
-    """Загружает транзакции из CSV-файла."""
-    filename = "C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\financial\\transactions.csv"
-    try:
-        with open(filename, "r", encoding="utf-8") as file:
-            return list(csv.DictReader(file))
-    except Exception as e:
-        print(f"Ошибка загрузки файла: {e}")
-        return []
-
-
-def load_transactions_from_xlsx():
-    """Загружает транзакции из XLSX-файла."""
-    filename = "C:\\Users\\КГА ПОУ ЛИК\\PycharmProjects\\My_project\\financial\\transactions_excel.xlsx"
-    try:
-        df = pd.read_excel(filename)
-        return df.to_dict("records")
-    except Exception as e:
-        print(f"Ошибка загрузки файла: {e}")
-        return []
-
-
-def filter_transactions_by_status(transactions):
-    """Фильтрует транзакции по заданному статусу."""
-    valid_statuses = {"EXECUTED", "CANCELED", "PENDING"}
-    while True:
-        status = input("Введите статус для фильтрации (EXECUTED, CANCELED, PENDING): ").strip().upper()
-        if status in valid_statuses:
-            return [tx for tx in transactions if tx.get("state", "").upper() == status]
-        print(f'Статус операции "{status}" недоступен.')
-
-
-def sort_transactions(transactions):
-    """Сортирует транзакции по дате в заданном порядке."""
-    sort_order = input("Отсортировать по возрастанию или по убыванию? ").strip().lower()
-    reverse_sort = sort_order == "по убыванию"
-    return sorted(transactions, key=lambda tx: tx.get("date", ""), reverse=reverse_sort)
-
+# Используем BASE_DIR из load_transactions.py
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 def main():
     """Основная функция программы, связывающая все функциональности."""
@@ -66,23 +18,30 @@ def main():
     print("3. Получить информацию о транзакциях из XLSX-файла")
 
     choice = input("Ваш выбор: ").strip()
+
     if choice == "1":
-        transactions = load_transactions_from_json()
+        file_path = "data/operation.json"
+        transactions = load_transactions_from_json(file_path)
     elif choice == "2":
-        transactions = load_transactions_from_csv()
+        file_path = "financial/transactions.csv"
+        transactions = load_transactions_from_csv(file_path)
     elif choice == "3":
-        transactions = load_transactions_from_xlsx()
+        file_path = "financial/transactions_excel.xlsx"
+        transactions = load_transactions_from_xlsx(file_path)
     else:
         print("Некорректный выбор. Завершение программы.")
         return
 
-    transactions = filter_transactions_by_status(transactions)
+    transactions = filter_by_state(transactions)
     if input("Отсортировать операции по дате? Да/Нет: ").strip().lower() == "да":
         transactions = sort_transactions(transactions)
 
     if input("Отфильтровать по описанию? Да/Нет: ").strip().lower() == "да":
         keyword = input("Введите ключевое слово для фильтрации: ").strip()
         transactions = filter_transactions_by_description(transactions, keyword)
+
+    if input("Выводить только рублевые транзакции? Да/Нет: ").strip().lower() == "да":
+        transactions = filter_rub_transactions(transactions)
 
     operation_counts = count_operations_by_category(transactions, ["EXECUTED", "CANCELED", "PENDING"])
     print("Количество операций по категориям:", operation_counts)
@@ -93,10 +52,7 @@ def main():
     else:
         print(f"Всего банковских операций в выборке: {len(transactions)}")
         for tx in transactions:
-            # Исправлено: получаем данные о сумме и валюте из вложенных структур
-            amount = tx.get("operationAmount", {}).get("amount", "Неизвестно")
-            currency = tx.get("operationAmount", {}).get("currency", {}).get("name", "Неизвестно")
-            print(f"{tx.get('date')} {tx.get('description')}\nСумма: {amount} {currency}")
+            print(format_transaction(tx))
 
 
 if __name__ == "__main__":

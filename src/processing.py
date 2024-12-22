@@ -20,17 +20,19 @@ def parse_date(record: Dict[str, str]) -> datetime:
         return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f")
     except ValueError:
         try:
-            # Если не удалось, пробуем парсить дату в формате "%Y-%m-%dT%H:%M:%SZ" (для CSV)
+            # Если не удалось, пробуем парсить дату в формате "%Y-%m-%dT%H:%M:%SZ" (для CSV и XLSX)
             return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
         except ValueError as e:
             raise ValueError(f"Invalid date format in record: {date_str}") from e
-
 
 def sort_by_date(records: List[Dict[str, str]], reverse: bool = False) -> List[Dict[str, str]]:
     """Сортирует записи по дате. Выбрасывает ValueError, если дата имеет некорректный формат."""
     return sorted(
         records,
-        key=lambda record: (parse_date(record), record["amount"]),
+        key=lambda record: (
+            parse_date(record),  # Сортировка по дате
+            float(record["operationAmount"]["amount"])  # Сортировка по сумме
+        ),
         reverse=reverse,
     )
 
