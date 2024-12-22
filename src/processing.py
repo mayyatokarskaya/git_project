@@ -12,21 +12,23 @@ def filter_by_state(transactions):
         print(f'Статус операции "{status}" недоступен.')
 
 
+def parse_date(record: Dict[str, str]) -> datetime:
+    """Парсит строку даты в объект datetime."""
+    try:
+        # Поддерживаем формат даты с временем и миллисекундами
+        return datetime.strptime(record["date"], "%Y-%m-%dT%H:%M:%S.%f")
+    except ValueError as e:
+        raise ValueError(f"Invalid date format in record: {record['date']}") from e
+
+
 def sort_by_date(records: List[Dict[str, str]], reverse: bool = False) -> List[Dict[str, str]]:
     """Сортирует записи по дате. Выбрасывает ValueError, если дата имеет некорректный формат."""
-
-    def parse_date(record: Dict[str, str]) -> datetime:
-        """Парсит строку даты в объект datetime."""
-        try:
-            return datetime.strptime(record["date"], "%Y-%m-%d")
-        except ValueError as e:
-            raise ValueError(f"Invalid date format in record: {record['date']}") from e
-
     return sorted(
         records,
         key=lambda record: (parse_date(record), record["amount"]),
         reverse=reverse,
     )
+
 
 def sort_transactions(transactions: List[Dict[str, str]]) -> List[Dict[str, str]]:
     """Сортирует транзакции по дате в заданном порядке."""

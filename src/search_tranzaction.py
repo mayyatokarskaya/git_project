@@ -5,10 +5,11 @@ from pathlib import Path
 
 import pandas as pd
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 def load_transactions_from_json(file_path):
     """Загружает данные из JSON файла"""
-    BASE_DIR = Path(__file__).resolve().parent.parent
+
     full_path = BASE_DIR / file_path
     try:
         with open(full_path, "r", encoding="utf-8") as file:
@@ -22,7 +23,7 @@ def load_transactions_from_json(file_path):
 
 def load_transactions_from_csv(file_path):
     """Загружает данные из CSV файла"""
-    BASE_DIR = Path(__file__).resolve().parent.parent
+
     full_path = BASE_DIR / file_path
     transactions = []
     try:
@@ -54,7 +55,7 @@ def load_transactions_from_csv(file_path):
 
 def load_transactions_from_xlsx(file_path):
     """Загружает данные из XLSX файла"""
-    BASE_DIR = Path(__file__).resolve().parent.parent
+
     full_path = BASE_DIR / file_path
     try:
         df = pd.read_excel(full_path)
