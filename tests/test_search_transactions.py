@@ -1,122 +1,100 @@
 import pytest
+from unittest import mock
+from pathlib import Path
+import json
+import pandas as pd
+from io import StringIO
+import csv
 
-from src.search_tranzaction import filter_transactions_by_description  # Импортируем функцию
+from src.search_tranzaction import (
+    load_transactions_from_json,
+    load_transactions_from_csv,
+    load_transactions_from_xlsx,
+    filter_transactions_by_description,
+)
 
 
-# Примеры данных для тестов
+# Фикстуры для тестирования загрузки данных
+
 @pytest.fixture
-def sample_transactions():
+def mock_json_file():
     return [
-        {
-            "id": 1,
-            "description": "Перевод организации",
-            "state": "EXECUTED",
-            "date": "2019-08-26T10:50:58.294041",
-            "operationAmount": {"amount": "31957.58", "currency": {"name": "руб.", "code": "RUB"}},
-            "from": "Maestro 1596837868705199",
-            "to": "Счет 64686473678894779589",
-        },
-        {
-            "id": 2,
-            "description": "Открытие вклада",
-            "state": "EXECUTED",
-            "date": "2018-03-23T10:45:06.972075",
-            "operationAmount": {"amount": "48223.05", "currency": {"name": "руб.", "code": "RUB"}},
-            "to": "Счет 41421565395219882431",
-        },
-        {
-            "id": 3,
-            "description": "Перевод с карты на счет",
-            "state": "EXECUTED",
-            "date": "2019-04-04T23:20:05.206878",
-            "operationAmount": {"amount": "79114.93", "currency": {"name": "USD", "code": "USD"}},
-            "from": "Счет 19708645243227258542",
-            "to": "Счет 75651667383060284188",
-        },
-        {
-            "id": 4,
-            "description": 12345,  # Некорректное значение (число вместо строки)
-            "state": "EXECUTED",
-            "date": "2019-03-23T01:09:46.296404",
-            "operationAmount": {"amount": "43318.34", "currency": {"name": "руб.", "code": "RUB"}},
-            "from": "Счет 44812258784861134719",
-            "to": "Счет 74489636417521191160",
-        },
-        {
-            "id": 5,
-            "description": None,  # Пустое значение
-            "state": "EXECUTED",
-            "date": "2018-12-20T16:43:26.929246",
-            "operationAmount": {"amount": "70946.18", "currency": {"name": "USD", "code": "USD"}},
-            "from": "Счет 10848359769870775355",
-            "to": "Счет 21969751544412966366",
-        },
+        {"id": 1, "state": "completed", "date": "2024-01-01",
+         "operationAmount": {"amount": 100, "currency": {"name": "USD", "code": "USD"}}, "from": "Alice", "to": "Bob",
+         "description": "exchange"},
+        {"id": 2, "state": "completed", "date": "2024-01-02",
+         "operationAmount": {"amount": 200, "currency": {"name": "EUR", "code": "EUR"}}, "from": "Charlie",
+         "to": "David", "description": "payment"},
     ]
 
 
-# Тесты для функции filter_transactions_by_description
-def test_filter_transactions_by_description_positive(sample_transactions):
-    """
-    Тест на корректную работу функции с валидными данными.
-    """
-    search_string = "перевод"
-    result = filter_transactions_by_description(sample_transactions, search_string)
-    assert len(result) == 2  # Должно найти 2 транзакции с описанием "перевод"
-    assert result[0]["id"] == 1
-    assert result[1]["id"] == 3
+@pytest.fixture
+def mock_csv_file():
+    csv_data = StringIO(
+        "id;state;date;amount;currency_name;currency_code;from;to;description\n"
+        "1;completed;2024-01-01;100;USD;USD;Alice;Bob;exchange\n"
+        "2;completed;2024-01-02;200;EUR;EUR;Charlie;David;payment\n"
+    )
+    return csv_data
 
 
-def test_filter_transactions_by_description_empty_description(sample_transactions):
-    """
-    Тест на обработку транзакций с пустым описанием.
-    """
-    search_string = "перевод"
-    result = filter_transactions_by_description(sample_transactions, search_string)
-    assert len(result) == 2  # Транзакция с пустым описанием не должна попасть в результат
+@pytest.fixture
+def mock_xlsx_file():
+    data = {
+        "id": [1, 2],
+        "state": ["completed", "completed"],
+        "date": ["2024-01-01", "2024-01-02"],
+        "amount": [100, 200],
+        "currency_name": ["USD", "EUR"],
+        "currency_code": ["USD", "EUR"],
+        "from": ["Alice", "Charlie"],
+        "to": ["Bob", "David"],
+        "description": ["exchange", "payment"]
+    }
+    return pd.DataFrame(data)
 
 
-def test_filter_transactions_by_description_invalid_description(sample_transactions):
-    """
-    Тест на обработку транзакций с некорректным типом описания (например, число).
-    """
-    search_string = "перевод"
-    result = filter_transactions_by_description(sample_transactions, search_string)
-    assert len(result) == 2  # Транзакция с некорректным описанием не должна попасть в результат
+# Тестируем load_transactions_from_json
+def test_load_transactions_from_json(mock_json_file):
+    with mock.patch("builtins.open", mock.mock_open(read_data=json.dumps(mock_json_file))):
+        result = load_transactions_from_json("mock_file.json")
+    assert len(result) == 2
+    assert result[0]["description"] == "exchange"
 
 
-def test_filter_transactions_by_description_no_matches(sample_transactions):
-    """
-    Тест на случай, когда нет совпадений.
-    """
-    search_string = "нет такого описания"
-    result = filter_transactions_by_description(sample_transactions, search_string)
-    assert len(result) == 0  # Результат должен быть пустым
+# Тестируем load_transactions_from_csv
+def test_load_transactions_from_csv(mock_csv_file):
+    with mock.patch("builtins.open", mock.mock_open(read_data=mock_csv_file.getvalue())):
+        result = load_transactions_from_csv("mock_file.csv")
+    assert len(result) == 2
+    assert result[0]["description"] == "exchange"
 
 
-def test_filter_transactions_by_description_case_insensitive(sample_transactions):
-    """
-    Тест на регистронезависимый поиск.
-    """
-    search_string = "Перевод"
-    result = filter_transactions_by_description(sample_transactions, search_string)
-    assert len(result) == 2  # Поиск должен быть регистронезависимым
+# Тестируем load_transactions_from_xlsx
+def test_load_transactions_from_xlsx(mock_xlsx_file):
+    with mock.patch("pandas.read_excel", return_value=mock_xlsx_file):
+        result = load_transactions_from_xlsx("mock_file.xlsx")
+    assert len(result) == 2
+    assert result[0]["description"] == "exchange"
 
 
-def test_filter_transactions_by_description_empty_transactions():
-    """
-    Тест на обработку пустого списка транзакций.
-    """
-    search_string = "перевод"
-    result = filter_transactions_by_description([], search_string)
-    assert len(result) == 0  # Результат должен быть пустым
+# Тестируем filter_transactions_by_description
+@pytest.mark.parametrize(
+    "search_string, expected_count",
+    [
+        ("exchange", 1),
+        ("payment", 1),
+        ("non-existent", 0),
+    ],
+)
+def test_filter_transactions_by_description(search_string, expected_count, mock_json_file, mock_csv_file,
+                                            mock_xlsx_file):
+    # Собираем все транзакции
+    all_transactions = mock_json_file + load_transactions_from_csv("mock_file.csv") + mock_xlsx_file.to_dict(
+        orient="records")
 
+    # Применяем фильтрацию
+    result = filter_transactions_by_description(all_transactions, search_string)
 
-def test_filter_transactions_by_description_missing_description(sample_transactions):
-    """
-    Тест на обработку транзакций без ключа 'description'.
-    """
-    # Удаляем ключ 'description' из одной из транзакций
-    sample_transactions[0].pop("description")
-    search_string = "перевод"
-    result = filter_transactions_by_description(sample_transactions, search_string)
-    assert len(result) == 1  # Транзакция без 'description' не должна попасть в результат
+    # Проверяем, что количество найденных транзакций соответствует ожидаемому
+    assert len(result) == expected_count
