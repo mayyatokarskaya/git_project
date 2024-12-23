@@ -85,5 +85,4 @@ def test_convert_transaction_to_rub_unsupported_currency():
 
 def test_convert_transaction_to_rub_empty_transaction():
     result = convert_transaction_to_rub(None)
-
     assert result is None
