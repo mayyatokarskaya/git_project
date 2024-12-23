@@ -32,15 +32,27 @@ def mask_account_card(account_info: Optional[str]) -> str:
 
 
 def get_date(date_str: str) -> Optional[str]:
-    """Преобразует строку с датой в формат 'ДД.ММ.ГГГГ'."""
-    formats = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"]  # Поддерживаем несколько форматов
+    """Преобразует строку с датой в формат 'ДД.ММ.ГГГГ'"""
+    # Поддерживаем несколько форматов ISO 8601
+    formats = [
+        "%Y-%m-%dT%H:%M:%S.%fZ",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%d"
+    ]
+
     for fmt in formats:
         try:
+
             date_obj = datetime.strptime(date_str, fmt)
+
             return date_obj.strftime("%d.%m.%Y")
         except ValueError:
+
             continue
-    return None  # Если ни один формат не подошел
+
+
+    return None
 
 
 def format_transaction(transaction: dict) -> str:
