@@ -1,13 +1,14 @@
 from pathlib import Path
 
+from processing import filter_by_state, filter_rub_transactions, sort_transactions
+from search_tranzaction import load_transactions_from_csv, load_transactions_from_json, load_transactions_from_xlsx
 from src.count_operations_by_category import count_operations_by_category
 from src.search_tranzaction import filter_transactions_by_description
-from search_tranzaction import load_transactions_from_json, load_transactions_from_csv, load_transactions_from_xlsx
-from processing import filter_by_state, sort_transactions, filter_rub_transactions
 from widget import format_transaction
 
 # Используем BASE_DIR из load_transactions.py
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 def main():
     """Основная функция программы, связывающая все функциональности."""

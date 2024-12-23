@@ -7,6 +7,7 @@ import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 def load_transactions_from_json(file_path):
     """Загружает данные из JSON файла"""
     full_path = BASE_DIR / file_path
@@ -48,14 +49,11 @@ def load_transactions_from_csv(file_path):
                         "date": row["date"],
                         "operationAmount": {
                             "amount": row["amount"],
-                            "currency": {
-                                "name": row["currency_name"],
-                                "code": row["currency_code"]
-                            }
+                            "currency": {"name": row["currency_name"], "code": row["currency_code"]},
                         },
                         "from": row["from"],
                         "to": row["to"],
-                        "description": row["description"]
+                        "description": row["description"],
                     }
                     transactions.append(transaction)
                 except ValueError as e:
@@ -96,14 +94,11 @@ def load_transactions_from_xlsx(file_path):
                 "date": row["date"],
                 "operationAmount": {
                     "amount": row["amount"],
-                    "currency": {
-                        "name": row["currency_name"],
-                        "code": row["currency_code"]
-                    }
+                    "currency": {"name": row["currency_name"], "code": row["currency_code"]},
                 },
                 "from": row["from"],
                 "to": row["to"],
-                "description": row["description"]
+                "description": row["description"],
             }
             transactions.append(transaction)
 

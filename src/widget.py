@@ -34,12 +34,7 @@ def mask_account_card(account_info: Optional[str]) -> str:
 def get_date(date_str: str) -> Optional[str]:
     """Преобразует строку с датой в формат 'ДД.ММ.ГГГГ'"""
     # Поддерживаем несколько форматов ISO 8601
-    formats = [
-        "%Y-%m-%dT%H:%M:%S.%fZ",
-        "%Y-%m-%dT%H:%M:%SZ",
-        "%Y-%m-%dT%H:%M:%S",
-        "%Y-%m-%d"
-    ]
+    formats = ["%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"]
 
     for fmt in formats:
         try:
@@ -50,7 +45,6 @@ def get_date(date_str: str) -> Optional[str]:
         except ValueError:
 
             continue
-
 
     return None
 
