@@ -21,8 +21,8 @@ def date_data() -> List[Tuple[str, Optional[str]]]:
     """Возвращает данные для тестирования преобразования даты"""
     return [
         ("2024-03-11T02:26:18.671407", "11.03.2024"),
-        ("2023-12-25T00:00:00.000000", "25.12.2023"),
-        ("2021-01-01T12:00:00.000000", "01.01.2021"),
+        ("2023-12-25T00:00:00", "25.12.2023"),
+        ("2021-01-01", "01.01.2021"),
         ("invalid_date", None),
         ("", None),
     ]
@@ -36,9 +36,9 @@ def date_data() -> List[Tuple[str, Optional[str]]]:
         ("Maestro 1596837868705199", "Maestro 1596 83** **** 5199"),
         ("Счет 73654108430135874305", "Счет **4305"),
         ("MasterCard 7158300734726758", "MasterCard 7158 30** **** 6758"),
-        ("Visa 123", "Неизвестный тип карты: Visa"),  # Некорректная карта
-        ("InvalidType 1234567890123456", "Неизвестный тип карты: InvalidType"),  # Неизвестный тип карты
-        ("Счет invalid_account", "Неизвестный тип карты: Счет"),  # Некорректный счет
+        ("Visa 123", "Некорректный номер карты: 123"),
+        ("InvalidType 1234567890123456", "Неизвестный тип карты или счета: InvalidType"),
+        ("Счет invalid_account", "Некорректный номер счета: invalid_account"),
     ],
 )
 def test_mask_account_card(account_info: str, expected_output: str) -> None:
@@ -51,8 +51,8 @@ def test_mask_account_card(account_info: str, expected_output: str) -> None:
     "date_str, expected_output",
     [
         ("2024-03-11T02:26:18.671407", "11.03.2024"),
-        ("2023-12-25T00:00:00.000000", "25.12.2023"),
-        ("2021-01-01T12:00:00.000000", "01.01.2021"),
+        ("2023-12-25T00:00:00", "25.12.2023"),
+        ("2021-01-01", "01.01.2021"),
         ("invalid_date", None),
         ("", None),
     ],
@@ -77,17 +77,17 @@ def test_get_date_with_fixture(date_data: List[Tuple[str, Optional[str]]]) -> No
 
 # Тестирование обработки некорректных входных данных для mask_account_card
 @pytest.mark.parametrize(
-    "account_info",
+    "account_info, expected_output",
     [
-        "Visa 123",  # слишком короткий номер карты
-        "InvalidType 1234567890123456",  # неизвестный тип карты
-        "Счет invalid_account",  # некорректный номер счета
-        "1234 5678",  # отсутствие типа
+        ("Visa 123", "Некорректный номер карты: 123"),
+        ("InvalidType 1234567890123456", "Неизвестный тип карты или счета: InvalidType"),
+        ("Счет invalid_account", "Некорректный номер счета: invalid_account"),
+        ("1234 5678", "Неизвестный тип карты или счета: 1234"),
     ],
 )
-def test_invalid_mask_account_card(account_info: str) -> None:
+def test_invalid_mask_account_card(account_info: str, expected_output: str) -> None:
     """Проверка корректности обработки некорректных входных данных"""
-    assert mask_account_card(account_info) == "Неизвестный тип карты: 1234"
+    assert mask_account_card(account_info) == expected_output
 
 
 # Тестирование обработки некорректных данных в get_date
