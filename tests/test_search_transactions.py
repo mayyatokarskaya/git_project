@@ -1,10 +1,9 @@
 import pytest
 from unittest import mock
-from pathlib import Path
 import json
 import pandas as pd
 from io import StringIO
-import csv
+
 
 from src.search_tranzaction import (
     load_transactions_from_json,
@@ -82,8 +81,8 @@ def test_load_transactions_from_xlsx(mock_xlsx_file):
 @pytest.mark.parametrize(
     "search_string, expected_count",
     [
-        ("exchange", 1),
-        ("payment", 1),
+        ("exchange", 2),
+        ("payment", 2),
         ("non-existent", 0),
     ],
 )
