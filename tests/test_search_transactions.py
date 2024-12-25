@@ -1,30 +1,37 @@
-import pytest
-from unittest import mock
-from pathlib import Path
 import json
-import pandas as pd
 from io import StringIO
-import csv
+from unittest import mock
 
-from src.search_tranzaction import (
-    load_transactions_from_json,
-    load_transactions_from_csv,
-    load_transactions_from_xlsx,
-    filter_transactions_by_description,
-)
+import pandas as pd
+import pytest
 
+from src.search_tranzaction import (filter_transactions_by_description, load_transactions_from_csv,
+                                    load_transactions_from_json, load_transactions_from_xlsx)
 
 # Фикстуры для тестирования загрузки данных
+
 
 @pytest.fixture
 def mock_json_file():
     return [
-        {"id": 1, "state": "completed", "date": "2024-01-01",
-         "operationAmount": {"amount": 100, "currency": {"name": "USD", "code": "USD"}}, "from": "Alice", "to": "Bob",
-         "description": "exchange"},
-        {"id": 2, "state": "completed", "date": "2024-01-02",
-         "operationAmount": {"amount": 200, "currency": {"name": "EUR", "code": "EUR"}}, "from": "Charlie",
-         "to": "David", "description": "payment"},
+        {
+            "id": 1,
+            "state": "completed",
+            "date": "2024-01-01",
+            "operationAmount": {"amount": 100, "currency": {"name": "USD", "code": "USD"}},
+            "from": "Alice",
+            "to": "Bob",
+            "description": "exchange",
+        },
+        {
+            "id": 2,
+            "state": "completed",
+            "date": "2024-01-02",
+            "operationAmount": {"amount": 200, "currency": {"name": "EUR", "code": "EUR"}},
+            "from": "Charlie",
+            "to": "David",
+            "description": "payment",
+        },
     ]
 
 
@@ -49,7 +56,7 @@ def mock_xlsx_file():
         "currency_code": ["USD", "EUR"],
         "from": ["Alice", "Charlie"],
         "to": ["Bob", "David"],
-        "description": ["exchange", "payment"]
+        "description": ["exchange", "payment"],
     }
     return pd.DataFrame(data)
 
@@ -87,11 +94,13 @@ def test_load_transactions_from_xlsx(mock_xlsx_file):
         ("non-existent", 0),
     ],
 )
-def test_filter_transactions_by_description(search_string, expected_count, mock_json_file, mock_csv_file,
-                                            mock_xlsx_file):
+def test_filter_transactions_by_description(
+    search_string, expected_count, mock_json_file, mock_csv_file, mock_xlsx_file
+):
     # Собираем все транзакции
-    all_transactions = mock_json_file + load_transactions_from_csv("mock_file.csv") + mock_xlsx_file.to_dict(
-        orient="records")
+    all_transactions = (
+        mock_json_file + load_transactions_from_csv("mock_file.csv") + mock_xlsx_file.to_dict(orient="records")
+    )
 
     # Применяем фильтрацию
     result = filter_transactions_by_description(all_transactions, search_string)

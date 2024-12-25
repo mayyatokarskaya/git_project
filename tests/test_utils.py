@@ -30,6 +30,7 @@ def test_some_utils_function_exception():
         mock_error.assert_called_once_with("Ошибка: некорректные данные: three")
         mock_info.assert_not_called()
 
+
 if __name__ == "__main__":
     # Запускаем тесты и выводим результаты
     for test in [

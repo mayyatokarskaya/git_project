@@ -42,7 +42,6 @@ def some_utils_function(data):
     return result
 
 
-
 if __name__ == "__main__":
     # Пример использования функции
     data = [1, 2, 3, 4]

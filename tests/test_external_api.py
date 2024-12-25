@@ -20,8 +20,9 @@ def mock_requests_get():
 
 
 def test_get_exchange_rate_success(mock_getenv, mock_requests_get):
-    with patch("src.external_api.BASE_URL", "https://api.apilayer.com/exchangerates_data/latest"), \
-         patch("src.external_api.API_KEY", "test_api_key"):
+    with patch("src.external_api.BASE_URL", "https://api.apilayer.com/exchangerates_data/latest"), patch(
+        "src.external_api.API_KEY", "test_api_key"
+    ):
 
         mock_response = Mock()
         mock_response.status_code = 200
@@ -36,7 +37,6 @@ def test_get_exchange_rate_success(mock_getenv, mock_requests_get):
             headers={"apikey": "test_api_key"},
             params={"base": "USD", "symbols": "RUB"},
         )
-
 
 
 def test_get_exchange_rate_error(mock_requests_get):
