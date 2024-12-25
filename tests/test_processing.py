@@ -88,7 +88,7 @@ def test_sort_by_date(sample_records: List[Dict[str, str]], reverse: bool, expec
 
 
 def test_sort_by_date_with_equal_dates() -> None:
-    """Тестирует функцию sort_by_date на случаи с одинаковыми датами"""
+    """Тестирует функцию sort_by_date на случаи с одинаковыми датами, но разным состоянием и суммой."""
     records = [
         {
             "state": "EXECUTED",
@@ -115,9 +115,20 @@ def test_sort_by_date_with_equal_dates() -> None:
             "operationAmount": {"amount": "200"},
         },
     ]
-    sorted_records = sort_by_date(records)
-    assert sorted_records[0]["date"] == sorted_records[1]["date"]
-    assert sorted_records[0]["state"] == "EXECUTED"
+
+    sorted_records = sort_by_date(records, reverse=True)
+
+    # Ожидаемый порядок записей
+    expected_dates = [
+        "2024-11-24T12:34:56.789000",
+        "2024-11-23T11:00:00.000000",
+        "2024-11-22T15:30:45.123000",
+        "2024-11-22T08:15:30.456000",
+    ]
+    expected_states = ["EXECUTED", "PENDING", "CANCELLED", "EXECUTED"]
+
+    assert [record["date"] for record in sorted_records] == expected_dates
+    assert [record["state"] for record in sorted_records] == expected_states
 
 
 def test_sort_by_date_invalid_format() -> None:
