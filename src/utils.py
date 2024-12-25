@@ -30,14 +30,17 @@ def some_utils_function(data):
         logger_utils.error("Ошибка: данные пустые.")  # Логируем ошибку
         return []
 
-    try:
-        # Некоторые операции с данными
-        result = [x * 2 for x in data]  # Просто пример обработки данных
-        logger_utils.info("Операция выполнена успешно.")  # Логируем успешное выполнение
-        return result
-    except Exception as e:
-        logger_utils.error(f"Ошибка при обработке данных: {e}")  # Логируем ошибку
-        return []
+    result = []
+    for item in data:
+        if isinstance(item, (int, float)):  # Проверяем, что элемент - это число
+            result.append(item * 2)  # Умножаем число на 2
+        else:
+            logger_utils.error(f"Ошибка: некорректные данные: {item}")  # Логируем ошибку
+            return []  # Возвращаем пустой список, если встретили некорректные данные
+
+    logger_utils.info("Операция выполнена успешно.")  # Логируем успешное выполнение
+    return result
+
 
 
 if __name__ == "__main__":

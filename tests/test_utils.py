@@ -25,10 +25,10 @@ def test_some_utils_function_exception():
     data = [1, 2, "three", 4]  # Пример данных, которые вызовут исключение
     with patch.object(logger_utils, "info") as mock_info, patch.object(logger_utils, "error") as mock_error:
         result = some_utils_function(data)
-        assert result == []
-        mock_error.assert_called_once()  # Проверяем, что была вызвана ошибка
+        assert result == []  # Ожидаем пустой список при ошибочных данных
+        # Проверяем, что ошибка была вызвана для строки "three"
+        mock_error.assert_called_once_with("Ошибка: некорректные данные: three")
         mock_info.assert_not_called()
-
 
 if __name__ == "__main__":
     # Запускаем тесты и выводим результаты
